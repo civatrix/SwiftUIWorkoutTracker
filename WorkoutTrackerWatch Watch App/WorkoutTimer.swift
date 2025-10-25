@@ -38,19 +38,15 @@ struct WorkoutTimer: View {
             }
             .font(.largeTitle)
         }
+        .onTapGesture {
+            guard isPaused else { return }
+            isPaused = false
+            viewModel.startTimer(range: range)
+        }
         .onChange(of: viewModel.elapsedTime) {
             guard !isPaused else { return }
-            elapsedTime += 1
+            elapsedTime = viewModel.elapsedTime
             value = elapsedTime
-            if elapsedTime == range.upperBound {
-                WKInterfaceDevice.current().play(.success)
-                isPaused = true
-            } else if elapsedTime == range.lowerBound {
-                WKInterfaceDevice.current().play(.failure)
-            }
-        }
-        .onTapGesture {
-            isPaused.toggle()
         }
     }
 }

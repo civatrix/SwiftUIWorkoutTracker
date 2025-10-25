@@ -51,15 +51,15 @@ struct WatchWorkoutView: View {
                             restTime = 30
                             forceHide = true
                         }
-                        .onChange(of: viewModel.elapsedTime) {
-                            guard let restTime else { return }
-                            if restTime == 0 {
-                                self.restTime = nil
+//                        .onChange(of: viewModel.elapsedTime) {
+//                            guard let restTime else { return }
+//                            if restTime == 0 {
+//                                self.restTime = nil
 //                                WKInterfaceDevice.current().play(.success)
-                            } else {
-                                self.restTime = restTime - 1
-                            }
-                        }
+//                            } else {
+//                                self.restTime = restTime - 1
+//                            }
+//                        }
                         .onAppear {
                             let workout = viewModel.workoutData[viewModel.activeSet]
                             initialReps = workout.completedReps ?? workout.repRange.upperBound

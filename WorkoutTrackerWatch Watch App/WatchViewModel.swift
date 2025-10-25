@@ -5,8 +5,9 @@
 //  Created by Daniel Johns on 2025-04-03.
 //
 
-import Foundation
 import Combine
+import Foundation
+import WatchKit
 
 class WatchViewModel: ObservableObject {
     @MainActor
@@ -27,14 +28,30 @@ class WatchViewModel: ObservableObject {
     @MainActor @Published
     var elapsedTime: Int = 0
     
+    private var timerStart: Date?
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private var cancelBag: Set<AnyCancellable> = []
     
     @MainActor
     init() {
-        timer.sink { _ in
-            self.elapsedTime += 1
+        timer.sink { [weak self] _ in
+            guard let self, let timerStart else { return }
+            self.elapsedTime = Int(Date().timeIntervalSince(timerStart))
         }.store(in: &cancelBag)
+    }
+    
+    func startTimer(range: ClosedRange<Int>) {
+        timerStart = Date()
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(range.upperBound)) {
+            WKInterfaceDevice.current().play(.success)
+            self.elapsedTime = range.upperBound
+            self.timerStart = nil
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(range.lowerBound)) {
+            WKInterfaceDevice.current().play(.failure)
+            self.elapsedTime = range.lowerBound
+        }
     }
     
     @MainActor
