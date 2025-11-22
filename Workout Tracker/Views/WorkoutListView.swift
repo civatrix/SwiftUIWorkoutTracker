@@ -36,6 +36,11 @@ struct WorkoutListView: View {
             }
             .toolbar {
                 ToolbarItem {
+                    Button(action: viewLogs) {
+                        Label("View Logs", systemImage: "list.bullet")
+                    }
+                }
+                ToolbarItem {
                     Button(action: addItem) {
                         Label("Add Item", systemImage: "plus")
                     }
@@ -45,6 +50,12 @@ struct WorkoutListView: View {
         }
         .environmentObject(navigationManager)
         .navigationTitle("Workouts")
+    }
+    
+    private func viewLogs() {
+        withAnimation {
+            navigationManager.goToLogs()
+        }
     }
 
     private func addItem() {

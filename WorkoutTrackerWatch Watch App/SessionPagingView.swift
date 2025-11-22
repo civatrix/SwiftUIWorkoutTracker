@@ -14,11 +14,13 @@ struct SessionPagingView: View {
     @State private var selection: Tab = .workout
 
     enum Tab {
-        case workout, nowPlaying
+        case logs, workout, nowPlaying
     }
 
     var body: some View {
         TabView(selection: $selection) {
+            LogsView()
+                .tag(Tab.logs)
             TimelineView(MetricsTimelineSchedule(from: Date(), isPaused: false)) { context in
                 WatchWorkoutView()
             }

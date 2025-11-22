@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6D617D752ED1959400158396 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D617D742ED1959000158396 /* Logger.swift */; };
+		6D617D762ED1959400158396 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D617D742ED1959000158396 /* Logger.swift */; };
+		6D617D782ED199FA00158396 /* LogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D617D772ED199F700158396 /* LogsView.swift */; };
+		6D617D792ED19A5600158396 /* LogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D617D772ED199F700158396 /* LogsView.swift */; };
 		B90BCD152D66EC70008D1F4A /* RepButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90BCD142D66EC70008D1F4A /* RepButtons.swift */; };
 		B9C2DC152D8F856800C86913 /* WorkoutTrackerWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B9C2DC082D8F856700C86913 /* WorkoutTrackerWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B9C2DC1A2D8F87A000C86913 /* Workout.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9DE1AA32D3DB39B00914098 /* Workout.swift */; };
@@ -85,6 +89,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		6D617D742ED1959000158396 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		6D617D772ED199F700158396 /* LogsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsView.swift; sourceTree = "<group>"; };
 		B90BCD142D66EC70008D1F4A /* RepButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepButtons.swift; sourceTree = "<group>"; };
 		B96B05682D71758B003EAD97 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		B96B056A2D71758B003EAD97 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -154,6 +160,7 @@
 		B94E272B2D50511A000CA7E5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				6D617D772ED199F700158396 /* LogsView.swift */,
 				B9DE1AA52D3DCE0A00914098 /* CompletedWorkoutView.swift */,
 				B9DE1AAD2D44BA4A00914098 /* CreateWorkoutTemplateView.swift */,
 				B9DE1AA72D44B06000914098 /* CreateWorkoutView.swift */,
@@ -166,6 +173,7 @@
 		B94E272C2D505129000CA7E5 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				6D617D742ED1959000158396 /* Logger.swift */,
 				B9FC4FFA2D988EE7004AE77F /* WorkoutManager.swift */,
 				B9C2DC292D91030B00C86913 /* ConnectivityManager.swift */,
 				B9DE1AA32D3DB39B00914098 /* Workout.swift */,
@@ -435,6 +443,8 @@
 				B9FC4FFB2D988EEA004AE77F /* WorkoutManager.swift in Sources */,
 				B9C2DC2A2D91031300C86913 /* ConnectivityManager.swift in Sources */,
 				B9C2DC2D2D91162B00C86913 /* ModelContainer.swift in Sources */,
+				6D617D792ED19A5600158396 /* LogsView.swift in Sources */,
+				6D617D762ED1959400158396 /* Logger.swift in Sources */,
 				B9C2DC232D8F9D9B00C86913 /* Fractions.swift in Sources */,
 				B9D0E1A42E667FA000CBD606 /* TimerManager.swift in Sources */,
 				B9C2DC1A2D8F87A000C86913 /* Workout.swift in Sources */,
@@ -452,8 +462,10 @@
 				B90BCD152D66EC70008D1F4A /* RepButtons.swift in Sources */,
 				B9DE1AAC2D44B8E300914098 /* WorkoutView.swift in Sources */,
 				B9D0E1A52E667FA000CBD606 /* TimerManager.swift in Sources */,
+				6D617D752ED1959400158396 /* Logger.swift in Sources */,
 				B9C2DC2B2D91031300C86913 /* ConnectivityManager.swift in Sources */,
 				B9DE1AAA2D44B48C00914098 /* NavigationManager.swift in Sources */,
+				6D617D782ED199FA00158396 /* LogsView.swift in Sources */,
 				B9DE1A7A2D3DB2A600914098 /* WorkoutListView.swift in Sources */,
 				B9C2DC222D8F9D2D00C86913 /* Fractions.swift in Sources */,
 				B9DE1AB02D45990500914098 /* NumericTextField.swift in Sources */,
@@ -701,12 +713,14 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Workout-Tracker-Info.plist";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -734,12 +748,14 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Workout-Tracker-Info.plist";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

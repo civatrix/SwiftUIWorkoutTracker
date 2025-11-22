@@ -111,7 +111,6 @@ struct CreateWorkoutTemplateView: View {
             errorRow = error.row
         } catch {
             errorReason = error.localizedDescription
-            print(error)
         }
     }
     

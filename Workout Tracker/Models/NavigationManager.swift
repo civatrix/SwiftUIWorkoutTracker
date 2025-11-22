@@ -10,6 +10,7 @@ import SwiftUI
 
 class NavigationManager: ObservableObject {
     enum ViewDestination: Hashable {
+        case logs
         case completedWorkout(workout: Workout)
         case createWorkout
         case createWorkoutTemplate
@@ -18,6 +19,8 @@ class NavigationManager: ObservableObject {
         case resumeWorkout(workout: Workout)
         func newView() -> some View {
             switch self {
+            case .logs:
+                AnyView(LogsView())
             case .completedWorkout(workout: let workout):
                 AnyView(CompletedWorkoutView(workout: workout))
             case .createWorkout:
@@ -35,6 +38,14 @@ class NavigationManager: ObservableObject {
     }
     
     @Published var navigationStack = [ViewDestination]()
+    func logsDestionation() -> ViewDestination {
+        .logs
+    }
+    
+    func goToLogs() {
+        navigationStack.append(logsDestionation())
+    }
+    
     func completedWorkoutDestination(_ workout: Workout) -> ViewDestination {
         .completedWorkout(workout: workout)
     }

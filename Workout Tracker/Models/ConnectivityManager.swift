@@ -29,7 +29,7 @@ class PhoneConnectivityManager: NSObject, WCSessionDelegate {
     
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: (any Error)?) {
         if let error {
-            print("Error activating session: \(error)")
+            Logger.shared.log("Error activating session: \(error)")
         }
         
         let context = ModelContext(modelContainer)
@@ -46,14 +46,17 @@ class PhoneConnectivityManager: NSObject, WCSessionDelegate {
     }
     
     func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+        Logger.shared.log("didReceiveMessage Begin")
         guard let exerciseIndex = message["exerciseIndex"] as? Int,
               let setIndex = message["setIndex"] as? Int,
               let completedReps = message["completedReps"] as? Int else { return }
+        Logger.shared.log("didReceiveMessage exerciseIndex: \(exerciseIndex), setIndex: \(setIndex), completedReps: \(completedReps)")
         
         let context = ModelContext(modelContainer)
         guard let activeWorkoutIdentifier, let activeWorkout = context.model(for: activeWorkoutIdentifier) as? Workout else { return }
         activeWorkout.ingestWatchData(exerciseIndex: exerciseIndex, setIndex: setIndex, completedReps: completedReps)
         try! context.save()
+        Logger.shared.log("didReceiveMessage End")
     }
     
     func sendWorkout(_ workout: Workout) {
@@ -63,7 +66,7 @@ class PhoneConnectivityManager: NSObject, WCSessionDelegate {
         do {
             try WCSession.default.updateApplicationContext(["data": try JSONEncoder().encode(workout.createWatchData())])
         } catch {
-            print("Error sending workout: \(error)")
+            Logger.shared.log("Error sending workout: \(error)")
         }
     }
     
@@ -77,7 +80,7 @@ class PhoneConnectivityManager: NSObject, WCSessionDelegate {
         do {
             try WCSession.default.updateApplicationContext(["activeSet": activeSet])
         } catch {
-            print("Error sending workout: \(error)")
+            Logger.shared.log("Error sending workout: \(error)")
         }
     }
 }
@@ -98,7 +101,7 @@ class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
     
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: (any Error)?) {
         if let error {
-            print("Error activating session: \(error)")
+            Logger.shared.log("Error activating session: \(error)")
         }
     }
     
@@ -113,7 +116,6 @@ class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
                     }
                 }
             } else if let activeSet = applicationContext["activeSet"] as? Int {
-                print(activeSet.description)
                 Task {
                     await MainActor.run {
                         self.viewModel?.activeSet = activeSet
@@ -121,21 +123,21 @@ class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
                 }
             }
         } catch {
-            print("Error decoding workout: \(error)")
+            Logger.shared.log("Error decoding workout: \(error)")
         }
     }
     
     func sendWorkoutData(exercise: WatchSetData, completedReps: Int) {
         guard WCSession.default.activationState == .activated else { return }
         
+        Logger.shared.log("sendWorkoutData exerciseIndex: \(exercise.exerciseIndex), setIndex: \(exercise.setIndex), completedReps: \(completedReps)")
         let message = [
             "exerciseIndex": exercise.exerciseIndex,
             "setIndex": exercise.setIndex,
             "completedReps": completedReps
         ]
         WCSession.default.sendMessage(message, replyHandler: nil, errorHandler: { error in
-            WKInterfaceDevice.current().play(.retry)
-            print(error)
+            Logger.shared.log(error.localizedDescription)
         })
     }
 }
