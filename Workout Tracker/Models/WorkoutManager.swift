@@ -12,7 +12,7 @@ import WatchKit
 class WorkoutManager: NSObject, ObservableObject {
     let healthStore = HKHealthStore()
     var builder: HKLiveWorkoutBuilder?
-    var session = WKExtendedRuntimeSession()
+    var session: WKExtendedRuntimeSession?
     
     @Published var heartRate: Double = 0
     
@@ -32,17 +32,20 @@ class WorkoutManager: NSObject, ObservableObject {
         workoutSession?.startActivity(with: Date())
         builder?.beginCollection(withStart: Date()) { _, _ in }
         
-        session.start()
+        session = WKExtendedRuntimeSession()
+        session?.start()
     }
     
     func completeWorkout() {
-        guard let builder = builder else { return }
+        guard let builder else { return }
         
         heartRate = 0
         builder.endCollection(withEnd: Date()) { _, _ in
             builder.finishWorkout() { _, _ in }
         }
-        session.invalidate()
+        session?.invalidate()
+        session = nil
+        self.builder = nil
     }
     
     // Request authorization to access HealthKit.

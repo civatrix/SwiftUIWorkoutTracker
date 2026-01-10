@@ -38,25 +38,31 @@ class PhoneConnectivityManager: NSObject, WCSessionDelegate {
     }
     
     func sessionDidBecomeInactive(_ session: WCSession) {
-        
+        Logger.shared.log("SessionDidBecomeInactive")
     }
     
     func sessionDidDeactivate(_ session: WCSession) {
-        
+        Logger.shared.log("SessionDidDeactivate")
     }
     
-    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+    func session(_ session: WCSession, didReceiveMessage message: [String : Any], replyHandler: @escaping ([String : Any]) -> Void) {
         Logger.shared.log("didReceiveMessage Begin")
-        guard let exerciseIndex = message["exerciseIndex"] as? Int,
-              let setIndex = message["setIndex"] as? Int,
-              let completedReps = message["completedReps"] as? Int else { return }
-        Logger.shared.log("didReceiveMessage exerciseIndex: \(exerciseIndex), setIndex: \(setIndex), completedReps: \(completedReps)")
+        guard let messages = message["messages"] as? [[String: Int]] else { return }
         
         let context = ModelContext(modelContainer)
-        guard let activeWorkoutIdentifier, let activeWorkout = context.model(for: activeWorkoutIdentifier) as? Workout else { return }
-        activeWorkout.ingestWatchData(exerciseIndex: exerciseIndex, setIndex: setIndex, completedReps: completedReps)
+        for message in messages {
+            guard let exerciseIndex = message["exerciseIndex"],
+                  let setIndex = message["setIndex"],
+                  let completedReps = message["completedReps"] else { continue }
+            Logger.shared.log("didReceiveMessage exerciseIndex: \(exerciseIndex), setIndex: \(setIndex), completedReps: \(completedReps)")
+        
+            guard let activeWorkoutIdentifier, let activeWorkout = context.model(for: activeWorkoutIdentifier) as? Workout else { return }
+            activeWorkout.ingestWatchData(exerciseIndex: exerciseIndex, setIndex: setIndex, completedReps: completedReps)
+        }
         try! context.save()
         Logger.shared.log("didReceiveMessage End")
+        
+        replyHandler(message)
     }
     
     func sendWorkout(_ workout: Workout) {
@@ -88,6 +94,7 @@ class PhoneConnectivityManager: NSObject, WCSessionDelegate {
 import WatchKit
 class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
     var viewModel: WatchViewModel?
+    var cache: [[String: Int]] = []
     
     override init() {
         super.init()
@@ -136,7 +143,29 @@ class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
             "setIndex": exercise.setIndex,
             "completedReps": completedReps
         ]
-        WCSession.default.sendMessage(message, replyHandler: nil, errorHandler: { error in
+        cache.append(message)
+        WCSession.default.sendMessage(["messages": cache], replyHandler: { [weak self] reply in
+            guard let self, let messages = reply["messages"] as? [[String: Int]] else { return }
+            for message in messages {
+                self.cache.removeAll { message == $0 }
+            }
+            Logger.shared.log("Send successful. \(self.cache.count) messages in cache")
+        }, errorHandler: { error in
+            Logger.shared.log("\(error.localizedDescription). \(self.cache.count) messages in cache")
+        })
+    }
+    
+    func flushCache() {
+        Logger.shared.log("Flushing \(cache.count) cached messages")
+        WCSession.default.sendMessage(["messages": cache], replyHandler: { [weak self] reply in
+            guard let self, let messages = reply["messages"] as? [[String: Int]] else { return }
+            for message in messages {
+                self.cache.removeAll { message == $0 }
+            }
+            if !messages.isEmpty {
+                self.flushCache()
+            }
+        }, errorHandler: { error in
             Logger.shared.log(error.localizedDescription)
         })
     }
