@@ -48,6 +48,9 @@ struct WorkoutTimer: View {
             elapsedTime = viewModel.elapsedTime
             value = elapsedTime
         }
+        .onDisappear {
+            viewModel.cancelTimer()
+        }
     }
 }
 

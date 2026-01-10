@@ -42,18 +42,24 @@ class WatchViewModel: ObservableObject {
     
     func startTimer(range: ClosedRange<Int>) {
         timerStart = Date()
-        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(range.upperBound)) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(range.upperBound), qos: .userInteractive) { [weak self] in
+            guard self?.timerStart != nil else { return }
             WKInterfaceDevice.current().play(.success)
-            self.elapsedTime = range.upperBound
-            self.timerStart = nil
+            self?.elapsedTime = range.upperBound
+            self?.timerStart = nil
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(range.lowerBound)) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(range.lowerBound), qos: .userInteractive) { [weak self] in
+            guard self?.timerStart != nil else { return }
             WKInterfaceDevice.current().play(.failure)
-            self.elapsedTime = range.lowerBound
+            self?.elapsedTime = range.lowerBound
         }
     }
-    
+
+    func cancelTimer() {
+        timerStart = nil
+    }
+
     @MainActor
     func complete() {
         workoutData = []

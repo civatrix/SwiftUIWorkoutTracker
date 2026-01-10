@@ -14,7 +14,9 @@ struct WatchExerciseRow: View {
     let range: ClosedRange<Int>
     @Binding var value: Int
     let onSubmit: (Int) -> Void
-    
+
+    @State private var overrideRange = false
+
     var body: some View {
         VStack {
             HStack {
@@ -32,8 +34,11 @@ struct WatchExerciseRow: View {
                 let modifiedRange = (range.lowerBound * 60)...(range.upperBound * 60)
                 WorkoutTimer(range: modifiedRange, value: $value)
             case .bodyweight, .pounds:
-                Stepper(value: $value, in: range) {
+                Stepper(value: $value, in: overrideRange ? 0 ... Int.max : range) {
                     Text("\(value)")
+                }
+                .onLongPressGesture {
+                    overrideRange = true
                 }
             }
             
