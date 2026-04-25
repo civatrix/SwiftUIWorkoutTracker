@@ -7,32 +7,33 @@
 
 import Combine
 import Foundation
+import SwiftData
 import WatchKit
 
+@MainActor
 class WatchViewModel: ObservableObject {
-    @MainActor
     static let preview = {
         let viewModel = WatchViewModel()
-        viewModel.workoutData = [
-            .init(name: "Test Set", setNumber: "1/3", repRange: 1...10, exerciseIndex: 0, setIndex: 0, unit: .seconds)
-        ]
         return viewModel
     }()
     
-    @MainActor @Published
+    @Published
     var workoutData: [WatchSetData] = []
     
-    @MainActor @Published
+    @Published
+    var templates: [WorkoutTemplate] = []
+    
+    @Published
     var activeSet: Int = 0
     
-    @MainActor @Published
+    @Published
     var elapsedTime: Int = 0
     
+    var templateName: String?
     private var timerStart: Date?
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private var cancelBag: Set<AnyCancellable> = []
     
-    @MainActor
     init() {
         timer.sink { [weak self] _ in
             guard let self, let timerStart else { return }
@@ -60,9 +61,13 @@ class WatchViewModel: ObservableObject {
         timerStart = nil
     }
 
-    @MainActor
     func complete() {
         workoutData = []
         activeSet = -1
+    }
+    
+    func start(template: WorkoutTemplate) {
+        workoutData = template.newWorkout().createWatchData()
+        templateName = template.name
     }
 }

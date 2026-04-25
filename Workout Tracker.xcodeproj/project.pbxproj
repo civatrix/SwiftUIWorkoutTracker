@@ -20,8 +20,6 @@
 		B9C2DC2B2D91031300C86913 /* ConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9C2DC292D91030B00C86913 /* ConnectivityManager.swift */; };
 		B9C2DC2D2D91162B00C86913 /* ModelContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9C2DC2C2D91162500C86913 /* ModelContainer.swift */; };
 		B9C2DC2E2D91162B00C86913 /* ModelContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9C2DC2C2D91162500C86913 /* ModelContainer.swift */; };
-		B9D0E1A42E667FA000CBD606 /* TimerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D0E1A32E667FA000CBD606 /* TimerManager.swift */; };
-		B9D0E1A52E667FA000CBD606 /* TimerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9D0E1A32E667FA000CBD606 /* TimerManager.swift */; };
 		B9DE1A782D3DB2A600914098 /* Workout_TrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9DE1A772D3DB2A600914098 /* Workout_TrackerApp.swift */; };
 		B9DE1A7A2D3DB2A600914098 /* WorkoutListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9DE1A792D3DB2A600914098 /* WorkoutListView.swift */; };
 		B9DE1A7E2D3DB2A700914098 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B9DE1A7D2D3DB2A700914098 /* Assets.xcassets */; };
@@ -99,7 +97,6 @@
 		B9C2DC282D90E9A600C86913 /* Workout-Tracker-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Workout-Tracker-Info.plist"; sourceTree = SOURCE_ROOT; };
 		B9C2DC292D91030B00C86913 /* ConnectivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectivityManager.swift; sourceTree = "<group>"; };
 		B9C2DC2C2D91162500C86913 /* ModelContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainer.swift; sourceTree = "<group>"; };
-		B9D0E1A32E667FA000CBD606 /* TimerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerManager.swift; sourceTree = "<group>"; };
 		B9DE1A742D3DB2A600914098 /* Workout Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Workout Tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9DE1A772D3DB2A600914098 /* Workout_TrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workout_TrackerApp.swift; sourceTree = "<group>"; };
 		B9DE1A792D3DB2A600914098 /* WorkoutListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutListView.swift; sourceTree = "<group>"; };
@@ -178,7 +175,6 @@
 				B9C2DC292D91030B00C86913 /* ConnectivityManager.swift */,
 				B9DE1AA32D3DB39B00914098 /* Workout.swift */,
 				B9DE1AA92D44B48C00914098 /* NavigationManager.swift */,
-				B9D0E1A32E667FA000CBD606 /* TimerManager.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -446,7 +442,6 @@
 				6D617D792ED19A5600158396 /* LogsView.swift in Sources */,
 				6D617D762ED1959400158396 /* Logger.swift in Sources */,
 				B9C2DC232D8F9D9B00C86913 /* Fractions.swift in Sources */,
-				B9D0E1A42E667FA000CBD606 /* TimerManager.swift in Sources */,
 				B9C2DC1A2D8F87A000C86913 /* Workout.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -461,7 +456,6 @@
 				B9DE1AAE2D44BA4A00914098 /* CreateWorkoutTemplateView.swift in Sources */,
 				B90BCD152D66EC70008D1F4A /* RepButtons.swift in Sources */,
 				B9DE1AAC2D44B8E300914098 /* WorkoutView.swift in Sources */,
-				B9D0E1A52E667FA000CBD606 /* TimerManager.swift in Sources */,
 				6D617D752ED1959400158396 /* Logger.swift in Sources */,
 				B9C2DC2B2D91031300C86913 /* ConnectivityManager.swift in Sources */,
 				B9DE1AAA2D44B48C00914098 /* NavigationManager.swift in Sources */,

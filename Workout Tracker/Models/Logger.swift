@@ -10,9 +10,11 @@ import SwiftUI
 class Logger: ObservableObject {
     static let shared = Logger()
     
-    @Published var messages: [String] = []
+    @Published private(set) var messages: [String] = []
     
     func log(_ message: String) {
-        messages.append("\(Date().formatted(Date.FormatStyle(date: .omitted, time: .standard))): \(message)")
+        Task { @MainActor in
+            self.messages.append("\(Date().formatted(Date.FormatStyle(date: .omitted, time: .standard))): \(message)")
+        }
     }
 }

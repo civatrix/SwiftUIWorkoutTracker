@@ -12,11 +12,11 @@ import WatchConnectivity
 class PhoneConnectivityManager: NSObject, WCSessionDelegate {
     static let shared = PhoneConnectivityManager(modelContainer: .sharedModelContainer)
     
-    let modelContainer: ModelContainer
+    let modelContext: ModelContext
     var activeWorkoutIdentifier: PersistentIdentifier?
     
     init(modelContainer: ModelContainer) {
-        self.modelContainer = modelContainer
+        self.modelContext = ModelContext(modelContainer)
         
         super.init()
         
@@ -32,9 +32,10 @@ class PhoneConnectivityManager: NSObject, WCSessionDelegate {
             Logger.shared.log("Error activating session: \(error)")
         }
         
-        let context = ModelContext(modelContainer)
-        guard let activeWorkoutIdentifier, let activeWorkout = context.model(for: activeWorkoutIdentifier) as? Workout else { return }
-        sendWorkout(activeWorkout)
+        sendTemplates()
+        if let activeWorkoutIdentifier, let activeWorkout = modelContext.model(for: activeWorkoutIdentifier) as? Workout {
+            sendWorkout(activeWorkout)
+        }
     }
     
     func sessionDidBecomeInactive(_ session: WCSession) {
@@ -49,20 +50,45 @@ class PhoneConnectivityManager: NSObject, WCSessionDelegate {
         Logger.shared.log("didReceiveMessage Begin")
         guard let messages = message["messages"] as? [[String: Int]] else { return }
         
-        let context = ModelContext(modelContainer)
+        if activeWorkoutIdentifier == nil, let templateName = message["templateName"] as? String {
+            Logger.shared.log("Creating new workout from Template: \(templateName)")
+            if let template = try? modelContext.fetch(FetchDescriptor<WorkoutTemplate>(predicate: #Predicate { $0.name == templateName })).first {
+                let workout = template.newWorkout()
+                modelContext.insert(workout)
+                activeWorkoutIdentifier = workout.id
+            }
+        }
+        
         for message in messages {
             guard let exerciseIndex = message["exerciseIndex"],
                   let setIndex = message["setIndex"],
                   let completedReps = message["completedReps"] else { continue }
             Logger.shared.log("didReceiveMessage exerciseIndex: \(exerciseIndex), setIndex: \(setIndex), completedReps: \(completedReps)")
-        
-            guard let activeWorkoutIdentifier, let activeWorkout = context.model(for: activeWorkoutIdentifier) as? Workout else { return }
+            
+            guard let activeWorkoutIdentifier, let activeWorkout = modelContext.model(for: activeWorkoutIdentifier) as? Workout else { return }
             activeWorkout.ingestWatchData(exerciseIndex: exerciseIndex, setIndex: setIndex, completedReps: completedReps)
         }
-        try! context.save()
+        
+        try! modelContext.save()
         Logger.shared.log("didReceiveMessage End")
         
         replyHandler(message)
+    }
+    
+    func sendTemplates() {
+        guard WCSession.default.activationState == .activated else { return }
+        
+        Logger.shared.log("Starting to send templates")
+        guard let templates = try? modelContext.fetch(FetchDescriptor<WorkoutTemplate>(sortBy: [SortDescriptor(\.name)])) else {
+            return
+        }
+        do {
+            Logger.shared.log("Sending \(templates.count) templates")
+            try WCSession.default.updateApplicationContext(["templates": try JSONEncoder().encode(templates)])
+        } catch {
+            Logger.shared.log("Error sending templates: \(error)")
+        }
+        Logger.shared.log("Finished sending templates")
     }
     
     func sendWorkout(_ workout: Workout) {
@@ -78,8 +104,7 @@ class PhoneConnectivityManager: NSObject, WCSessionDelegate {
     
     func sendActiveSet(_ exercise: Exercise, _ set: Int) {
         guard WCSession.default.activationState == .activated else { return }
-        let context = ModelContext(modelContainer)
-        guard let activeWorkoutIdentifier, let activeWorkout = context.model(for: activeWorkoutIdentifier) as? Workout else { return }
+        guard let activeWorkoutIdentifier, let activeWorkout = modelContext.model(for: activeWorkoutIdentifier) as? Workout else { return }
         let watchData = activeWorkout.createWatchData()
         let activeSet = (watchData.firstIndex(where: { $0.name == exercise.longName }) ?? 0) + set
         
@@ -114,19 +139,21 @@ class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
     
     func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {
         do {
+            if let data = applicationContext["templates"] as? Data {
+                let templates = try JSONDecoder().decode([WorkoutTemplate].self, from: data)
+                Task { @MainActor in
+                    self.viewModel?.templates = templates
+                }
+            }
             if let data = applicationContext["data"] as? Data {
                 let workoutData = try JSONDecoder().decode([WatchSetData].self, from: data)
-                Task {
-                    await MainActor.run {
-                        self.viewModel?.workoutData = workoutData
-                        self.viewModel?.activeSet = workoutData.firstIndex { $0.completedReps == nil } ?? 0
-                    }
+                Task { @MainActor in
+                    self.viewModel?.workoutData = workoutData
+                    self.viewModel?.activeSet = workoutData.firstIndex { $0.completedReps == nil } ?? 0
                 }
             } else if let activeSet = applicationContext["activeSet"] as? Int {
-                Task {
-                    await MainActor.run {
-                        self.viewModel?.activeSet = activeSet
-                    }
+                Task { @MainActor in
+                    self.viewModel?.activeSet = activeSet
                 }
             }
         } catch {
@@ -134,7 +161,7 @@ class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
         }
     }
     
-    func sendWorkoutData(exercise: WatchSetData, completedReps: Int) {
+    func sendWorkoutData(exercise: WatchSetData, completedReps: Int, templateName: String? = nil) {
         guard WCSession.default.activationState == .activated else { return }
         
         Logger.shared.log("sendWorkoutData exerciseIndex: \(exercise.exerciseIndex), setIndex: \(exercise.setIndex), completedReps: \(completedReps)")
@@ -144,7 +171,7 @@ class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
             "completedReps": completedReps
         ]
         cache.append(message)
-        WCSession.default.sendMessage(["messages": cache], replyHandler: { [weak self] reply in
+        WCSession.default.sendMessage(["messages": cache, "templateName": templateName], replyHandler: { [weak self] reply in
             guard let self, let messages = reply["messages"] as? [[String: Int]] else { return }
             for message in messages {
                 self.cache.removeAll { message == $0 }
@@ -155,15 +182,15 @@ class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
         })
     }
     
-    func flushCache() {
+    func flushCache(templateName: String?) {
         Logger.shared.log("Flushing \(cache.count) cached messages")
-        WCSession.default.sendMessage(["messages": cache], replyHandler: { [weak self] reply in
+        WCSession.default.sendMessage(["messages": cache, "templateName": templateName], replyHandler: { [weak self] reply in
             guard let self, let messages = reply["messages"] as? [[String: Int]] else { return }
             for message in messages {
                 self.cache.removeAll { message == $0 }
             }
             if !messages.isEmpty {
-                self.flushCache()
+                self.flushCache(templateName: templateName)
             }
         }, errorHandler: { error in
             Logger.shared.log(error.localizedDescription)

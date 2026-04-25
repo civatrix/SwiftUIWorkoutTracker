@@ -134,7 +134,23 @@ final class Exercise {
 }
 
 @Model
-final class WorkoutTemplate {
+final class WorkoutTemplate: Codable {
+    enum CodingKeys: String, CodingKey {
+        case name, unsortedExercises
+    }
+    
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        unsortedExercises = try container.decode([ExerciseTemplate].self, forKey: .unsortedExercises)
+    }
+    
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encode(unsortedExercises, forKey: .unsortedExercises)
+    }
+    
     init(name: String, exercises: [ExerciseTemplate]) {
         self.name = name
         self.unsortedExercises = exercises
@@ -182,7 +198,31 @@ final class WorkoutTemplate {
 }
 
 @Model
-final class ExerciseTemplate {
+final class ExerciseTemplate: Codable {
+    enum CodingKeys: String, CodingKey {
+        case name, order, setCount, unit, repRange
+    }
+    
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        name = try container.decode(String.self, forKey: .name)
+        order = try container.decode(Int.self, forKey: .order)
+        setCount = try container.decode(Int.self, forKey: .setCount)
+        unit = try container.decode(Unit.self, forKey: .unit)
+        repRange = try container.decode(ClosedRange<Int>.self, forKey: .repRange)
+    }
+    
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(name, forKey: .name)
+        try container.encode(order, forKey: .order)
+        try container.encode(setCount, forKey: .setCount)
+        try container.encode(unit, forKey: .unit)
+        try container.encode(repRange, forKey: .repRange)
+    }
+    
     internal init(name: String, order: Int, setCount: Int, unit: Unit, repRange: ClosedRange<Int>) {
         self.name = name
         self.order = order

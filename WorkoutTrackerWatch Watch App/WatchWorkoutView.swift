@@ -15,9 +15,7 @@ struct WatchWorkoutView: View {
     @State private var initialReps = 0
     
     var body: some View {
-        if viewModel.workoutData.isEmpty {
-            Text("Waiting for phone to start workout...")
-        } else {
+        if !viewModel.workoutData.isEmpty {
             VStack(alignment: .leading) {
                 HStack {
                     Text(workoutManager.heartRate.formatted(.number.precision(.fractionLength(0))) + " bpm")
@@ -28,7 +26,7 @@ struct WatchWorkoutView: View {
                 if viewModel.workoutData.indices.contains(viewModel.activeSet) {
                     let exercise = viewModel.workoutData[viewModel.activeSet]
                     WatchExerciseRow(title: exercise.name, setNumber: exercise.setNumber, unit: exercise.unit, range: exercise.repRange, value: $initialReps) {
-                        connectivityManager.sendWorkoutData(exercise: exercise, completedReps: $0)
+                        connectivityManager.sendWorkoutData(exercise: exercise, completedReps: $0, templateName: viewModel.templateName)
                         viewModel.activeSet += 1
                     }
                     .onChange(of: viewModel.activeSet) {
@@ -47,12 +45,21 @@ struct WatchWorkoutView: View {
                         .font(.largeTitle)
                     
                     Button("Complete") {
-                        connectivityManager.flushCache()
+                        connectivityManager.flushCache(templateName: viewModel.templateName)
                         workoutManager.completeWorkout()
                         viewModel.complete()
                     }
                 }
             }
+        } else if !viewModel.templates.isEmpty {
+            List(viewModel.templates, id: \.self) { template in
+                Text(template.name)
+                    .onTapGesture {
+                        viewModel.start(template: template)
+                    }
+            }
+        } else {
+            Text("Waiting for phone to send templates or start workout...")
         }
     }
 }

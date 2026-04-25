@@ -50,6 +50,9 @@ struct WorkoutListView: View {
         }
         .environmentObject(navigationManager)
         .navigationTitle("Workouts")
+        .onAppear() {
+            PhoneConnectivityManager.shared.sendTemplates()
+        }
     }
     
     private func viewLogs() {
