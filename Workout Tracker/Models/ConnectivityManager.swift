@@ -141,6 +141,7 @@ class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
         do {
             if let data = applicationContext["templates"] as? Data {
                 let templates = try JSONDecoder().decode([WorkoutTemplate].self, from: data)
+                try? data.write(to: WatchViewModel.TemplateDataFileName)
                 Task { @MainActor in
                     self.viewModel?.templates = templates
                 }

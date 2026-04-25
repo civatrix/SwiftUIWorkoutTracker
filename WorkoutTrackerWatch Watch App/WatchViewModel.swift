@@ -12,6 +12,7 @@ import WatchKit
 
 @MainActor
 class WatchViewModel: ObservableObject {
+    static let TemplateDataFileName = URL.documentsDirectory.appending(path: "templates.json")
     static let preview = {
         let viewModel = WatchViewModel()
         return viewModel
@@ -39,6 +40,8 @@ class WatchViewModel: ObservableObject {
             guard let self, let timerStart else { return }
             self.elapsedTime = Int(Date().timeIntervalSince(timerStart))
         }.store(in: &cancelBag)
+        guard let data = try? Data(contentsOf: Self.TemplateDataFileName) else { return }
+        templates = (try? JSONDecoder().decode([WorkoutTemplate].self, from: data)) ?? []
     }
     
     func startTimer(range: ClosedRange<Int>) {

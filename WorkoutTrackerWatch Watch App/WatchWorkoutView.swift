@@ -53,10 +53,9 @@ struct WatchWorkoutView: View {
             }
         } else if !viewModel.templates.isEmpty {
             List(viewModel.templates, id: \.self) { template in
-                Text(template.name)
-                    .onTapGesture {
-                        viewModel.start(template: template)
-                    }
+                Button(template.name) {
+                    viewModel.start(template: template)
+                }
             }
         } else {
             Text("Waiting for phone to send templates or start workout...")
