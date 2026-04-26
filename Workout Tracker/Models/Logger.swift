@@ -13,6 +13,7 @@ class Logger: ObservableObject {
     @Published private(set) var messages: [String] = []
     
     func log(_ message: String) {
+        NSLog(message)
         Task { @MainActor in
             self.messages.append("\(Date().formatted(Date.FormatStyle(date: .omitted, time: .standard))): \(message)")
         }

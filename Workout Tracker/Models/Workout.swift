@@ -174,11 +174,6 @@ final class WorkoutTemplate: Codable {
         return prototype
     }
     
-    func update(from: WorkoutTemplatePrototype) throws {
-        name = from.name
-        unsortedExercises = try from.createTemplate().exercises
-    }
-    
     @MainActor
     static var preview: WorkoutTemplate {
         let container = ModelContainer.preview

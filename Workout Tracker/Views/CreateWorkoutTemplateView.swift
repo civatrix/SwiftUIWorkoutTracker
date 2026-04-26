@@ -100,11 +100,12 @@ struct CreateWorkoutTemplateView: View {
     func save() {
         do {
             if let existingTemplate {
-                try existingTemplate.update(from: template)
-            } else {
-                modelContext.insert(try template.createTemplate())
+                modelContext.delete(existingTemplate)
             }
+            modelContext.insert(try template.createTemplate())
             isDirty = false
+            try modelContext.save()
+            PhoneConnectivityManager.shared.sendTemplates()
             navigationManager.goBack()
         } catch let error as WorkoutTemplatePrototype.CreateError {
             errorReason = error.reason
