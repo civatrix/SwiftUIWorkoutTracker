@@ -175,6 +175,38 @@ final class WorkoutTemplate: Codable {
     }
     
     @MainActor
+    static var defaults: [WorkoutTemplate] {        
+        let workouts = [
+            WorkoutTemplate(name: "Legs Day 1", exercises: [
+                ExerciseTemplate(name: "Step ups", order: 0, setCount: 3, unit: .bodyweight, repRange: 8...15),
+                ExerciseTemplate(name: "Deadlift", order: 1, setCount: 2, unit: .pounds(60), repRange: 10...10),
+                ExerciseTemplate(name: "Squats Heel Raised", order: 2, setCount: 3, unit: .bodyweight, repRange: 10...10),
+                ExerciseTemplate(name: "Hamstring Curl", order: 3, setCount: 3, unit: .pounds(20), repRange: 12...12),
+                ExerciseTemplate(name: "Bench Bridge", order: 4, setCount: 3, unit: .bodyweight, repRange: 8...8),
+                ExerciseTemplate(name: "Calf Raises", order: 5, setCount: 3, unit: .bodyweight, repRange: 10...12),
+            ]),
+            WorkoutTemplate(name: "Legs Day 2", exercises: [
+                ExerciseTemplate(name: "Leg Lifts", order: 0, setCount: 3, unit: .bodyweight, repRange: 10...10),
+                ExerciseTemplate(name: "Split Squats", order: 1, setCount: 3, unit: .bodyweight, repRange: 6...10),
+                ExerciseTemplate(name: "Split Deadlift", order: 2, setCount: 2, unit: .pounds(20), repRange: 10...10),
+                ExerciseTemplate(name: "Knee Extension", order: 3, setCount: 3, unit: .pounds(15), repRange: 12...12),
+                ExerciseTemplate(name: "Elevated Bridge", order: 4, setCount: 2, unit: .bodyweight, repRange: 8...8),
+                ExerciseTemplate(name: "Calf Raises", order: 5, setCount: 3, unit: .bodyweight, repRange: 10...12),
+            ]),
+            WorkoutTemplate(name: "Arms", exercises: [
+                ExerciseTemplate(name: "Shoulder Press", order: 0, setCount: 2, unit: .pounds(10), repRange: 8...10),
+                ExerciseTemplate(name: "Hammer Curl", order: 1, setCount: 2, unit: .pounds(10), repRange: 8...10),
+                ExerciseTemplate(name: "Tricep Extension", order: 2, setCount: 2, unit: .pounds(10), repRange: 8...10),
+                ExerciseTemplate(name: "Lateral Raise", order: 3, setCount: 2, unit: .pounds(10), repRange: 8...10),
+                ExerciseTemplate(name: "Concentration Curl", order: 4, setCount: 2, unit: .pounds(10), repRange: 8...10),
+                ExerciseTemplate(name: "Tricep Pushdown", order: 5, setCount: 2, unit: .pounds(10), repRange: 8...10),
+            ])
+        ]
+        
+        return workouts
+    }
+    
+    @MainActor
     static var preview: WorkoutTemplate {
         let container = ModelContainer.preview
         

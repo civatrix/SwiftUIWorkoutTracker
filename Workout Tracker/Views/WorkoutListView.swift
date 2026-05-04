@@ -51,6 +51,16 @@ struct WorkoutListView: View {
         .environmentObject(navigationManager)
         .navigationTitle("Workouts")
         .onAppear() {
+            do {
+                if try modelContext.fetchCount(FetchDescriptor<WorkoutTemplate>()) == 0 {
+                    for template in WorkoutTemplate.defaults {
+                        modelContext.insert(template)
+                    }
+                    try modelContext.save()
+                }
+            } catch {
+                Logger.shared.log("Failed to fetch templates: \(error)")
+            }
             PhoneConnectivityManager.shared.sendTemplates()
         }
     }
