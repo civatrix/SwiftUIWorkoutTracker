@@ -39,16 +39,34 @@ final class Workout {
     }
     
     func createWatchData() -> [WatchSetData] {
-        exercises.enumerated().flatMap { (exerciseIndex, exercise) in
+        var seenGroups: Set<Int> = []
+        var watchData: [WatchSetData] = []
+        for exercise in exercises {
             let repCount = exercise.repsCompleted.count
-            return exercise.repsCompleted.enumerated().map { (setIndex, reps) in
-                WatchSetData(name: exercise.longName, setNumber: "\(setIndex + 1)/\(repCount)", repRange: exercise.repRange, exerciseIndex: exerciseIndex, setIndex: setIndex, unit: exercise.unit, completedReps: reps)
+            if let group = exercise.supersetGroup {
+                guard !seenGroups.contains(group) else { continue }
+                let data = exercises
+                    .filter { $0.supersetGroup == group }
+                    .map { exercise in
+                        return exercise.repsCompleted.enumerated().map { (setIndex, reps) in
+                            WatchSetData(name: exercise.longName, setNumber: "\(setIndex + 1)/\(repCount)", repRange: exercise.repRange, exerciseName: exercise.name, setIndex: setIndex, unit: exercise.unit, completedReps: reps)
+                        }
+                    }
+                watchData.append(contentsOf: data.interleaved())
+                seenGroups.insert(group)
+            } else {
+                let data = exercise.repsCompleted.enumerated().map { (setIndex, reps) in
+                    WatchSetData(name: exercise.longName, setNumber: "\(setIndex + 1)/\(repCount)", repRange: exercise.repRange, exerciseName: exercise.name, setIndex: setIndex, unit: exercise.unit, completedReps: reps)
+                }
+                watchData.append(contentsOf: data)
             }
         }
+        
+        return watchData
     }
     
-    func ingestWatchData(exerciseIndex: Int, setIndex: Int, completedReps: Int) {
-        exercises[exerciseIndex].repsCompleted[setIndex] = completedReps
+    func ingestWatchData(exerciseName: String, setIndex: Int, completedReps: Int) {
+        exercises.first { $0.name == exerciseName }?.repsCompleted[setIndex] = completedReps
     }
     
     @MainActor
@@ -56,10 +74,10 @@ final class Workout {
         let container = ModelContainer.preview
         
         let workout = Workout(name: "Test Workout", date: Date(), exercises: [
-            Exercise(name: "Squat", order: 0, unit: .bodyweight, repRange: 12...15, setCount: 3),
-            Exercise(name: "Deadlift", order: 1, unit: .pounds(30), repRange: 8...12, setCount: 3),
-            Exercise(name: "Wallsit", order: 2, unit: .seconds, repRange: 30...30, setCount: 2),
-            Exercise(name: "Bike", order: 3, unit: .minutes, repRange: 10...15, setCount: 1),
+            Exercise(name: "Squat", order: 0, unit: .bodyweight, repRange: 12...15, setCount: 3, supersetGroup: 0),
+            Exercise(name: "Deadlift", order: 1, unit: .pounds(30), repRange: 8...12, setCount: 3, supersetGroup: 0),
+            Exercise(name: "Wallsit", order: 2, unit: .seconds, repRange: 30...30, setCount: 2, supersetGroup: 1),
+            Exercise(name: "Bike", order: 3, unit: .minutes, repRange: 10...15, setCount: 1, supersetGroup: 1),
         ])
         
         container.mainContext.insert(workout)
@@ -71,12 +89,12 @@ final class Workout {
 
 struct WatchSetData: Codable, Equatable, Identifiable {
     var id: String {
-        return "\(exerciseIndex)-\(setIndex)"
+        return "\(exerciseName)-\(setIndex)"
     }
     let name: String
     let setNumber: String
     let repRange: ClosedRange<Int>
-    let exerciseIndex: Int
+    let exerciseName: String
     let setIndex: Int
     let unit: Unit
     var completedReps: Int?
@@ -84,12 +102,13 @@ struct WatchSetData: Codable, Equatable, Identifiable {
 
 @Model
 final class Exercise {
-    internal init(name: String, order: Int, unit: Unit, repRange: ClosedRange<Int>, setCount: Int) {
+    internal init(name: String, order: Int, unit: Unit, repRange: ClosedRange<Int>, setCount: Int, supersetGroup: Int?) {
         self.name = name
         self.order = order
         self.unit = unit
         self.repRange = repRange
         self.repsCompleted = [Int?](repeating: nil, count: setCount)
+        self.supersetGroup = supersetGroup
     }
     
     private(set) var name: String
@@ -97,6 +116,7 @@ final class Exercise {
     private(set) var unit: Unit
     private(set) var repRange: ClosedRange<Int>
     var repsCompleted: [Int?]
+    private(set) var supersetGroup: Int?
     
     var longName: String {
         return switch unit {
@@ -178,28 +198,28 @@ final class WorkoutTemplate: Codable {
     static var defaults: [WorkoutTemplate] {        
         let workouts = [
             WorkoutTemplate(name: "Legs Day 1", exercises: [
-                ExerciseTemplate(name: "Step ups", order: 0, setCount: 3, unit: .bodyweight, repRange: 8...15),
-                ExerciseTemplate(name: "Deadlift", order: 1, setCount: 2, unit: .pounds(60), repRange: 10...10),
-                ExerciseTemplate(name: "Squats Heel Raised", order: 2, setCount: 3, unit: .bodyweight, repRange: 10...10),
-                ExerciseTemplate(name: "Hamstring Curl", order: 3, setCount: 3, unit: .pounds(20), repRange: 12...12),
-                ExerciseTemplate(name: "Bench Bridge", order: 4, setCount: 3, unit: .bodyweight, repRange: 8...8),
-                ExerciseTemplate(name: "Calf Raises", order: 5, setCount: 3, unit: .bodyweight, repRange: 10...12),
+                ExerciseTemplate(name: "Step ups", order: 0, setCount: 3, unit: .bodyweight, repRange: 8...15, supersetGroup: 0),
+                ExerciseTemplate(name: "Deadlift", order: 1, setCount: 2, unit: .pounds(60), repRange: 10...10, supersetGroup: 0),
+                ExerciseTemplate(name: "Squats Heel Raised", order: 2, setCount: 3, unit: .bodyweight, repRange: 10...10, supersetGroup: 1),
+                ExerciseTemplate(name: "Hamstring Curl", order: 3, setCount: 3, unit: .pounds(20), repRange: 12...12, supersetGroup: 1),
+                ExerciseTemplate(name: "Bench Bridge", order: 4, setCount: 3, unit: .bodyweight, repRange: 8...8, supersetGroup: 2),
+                ExerciseTemplate(name: "Calf Raises", order: 5, setCount: 3, unit: .bodyweight, repRange: 10...12, supersetGroup: 2),
             ]),
             WorkoutTemplate(name: "Legs Day 2", exercises: [
-                ExerciseTemplate(name: "Leg Lifts", order: 0, setCount: 3, unit: .bodyweight, repRange: 10...10),
-                ExerciseTemplate(name: "Split Squats", order: 1, setCount: 3, unit: .bodyweight, repRange: 6...10),
-                ExerciseTemplate(name: "Split Deadlift", order: 2, setCount: 2, unit: .pounds(20), repRange: 10...10),
-                ExerciseTemplate(name: "Knee Extension", order: 3, setCount: 3, unit: .pounds(15), repRange: 12...12),
-                ExerciseTemplate(name: "Elevated Bridge", order: 4, setCount: 2, unit: .bodyweight, repRange: 8...8),
-                ExerciseTemplate(name: "Calf Raises", order: 5, setCount: 3, unit: .bodyweight, repRange: 10...12),
+                ExerciseTemplate(name: "Leg Lifts", order: 0, setCount: 3, unit: .bodyweight, repRange: 10...10, supersetGroup: nil),
+                ExerciseTemplate(name: "Split Squats", order: 1, setCount: 3, unit: .bodyweight, repRange: 6...10, supersetGroup: 0),
+                ExerciseTemplate(name: "Split Deadlift", order: 2, setCount: 2, unit: .pounds(20), repRange: 10...10, supersetGroup: 0),
+                ExerciseTemplate(name: "Knee Extension", order: 3, setCount: 3, unit: .pounds(15), repRange: 12...12, supersetGroup: 1),
+                ExerciseTemplate(name: "Elevated Bridge", order: 4, setCount: 2, unit: .bodyweight, repRange: 8...8, supersetGroup: 1),
+                ExerciseTemplate(name: "Calf Raises", order: 5, setCount: 3, unit: .bodyweight, repRange: 10...12, supersetGroup: nil),
             ]),
             WorkoutTemplate(name: "Arms", exercises: [
-                ExerciseTemplate(name: "Shoulder Press", order: 0, setCount: 2, unit: .pounds(10), repRange: 8...10),
-                ExerciseTemplate(name: "Hammer Curl", order: 1, setCount: 2, unit: .pounds(10), repRange: 8...10),
-                ExerciseTemplate(name: "Tricep Extension", order: 2, setCount: 2, unit: .pounds(10), repRange: 8...10),
-                ExerciseTemplate(name: "Lateral Raise", order: 3, setCount: 2, unit: .pounds(10), repRange: 8...10),
-                ExerciseTemplate(name: "Concentration Curl", order: 4, setCount: 2, unit: .pounds(10), repRange: 8...10),
-                ExerciseTemplate(name: "Tricep Pushdown", order: 5, setCount: 2, unit: .pounds(10), repRange: 8...10),
+                ExerciseTemplate(name: "Shoulder Press", order: 0, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 0),
+                ExerciseTemplate(name: "Hammer Curl", order: 1, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 0),
+                ExerciseTemplate(name: "Tricep Extension", order: 2, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 1),
+                ExerciseTemplate(name: "Lateral Raise", order: 3, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 1),
+                ExerciseTemplate(name: "Concentration Curl", order: 4, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 2),
+                ExerciseTemplate(name: "Tricep Pushdown", order: 5, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 2),
             ])
         ]
         
@@ -211,10 +231,10 @@ final class WorkoutTemplate: Codable {
         let container = ModelContainer.preview
         
         let workout = WorkoutTemplate(name: "Test Workout", exercises: [
-            ExerciseTemplate(name: "Squat", order: 0, setCount: 3, unit: .bodyweight, repRange: 12...15),
-            ExerciseTemplate(name: "Deadlift", order: 1, setCount: 3, unit: .pounds(30), repRange: 8...12),
-            ExerciseTemplate(name: "Wallsit", order: 2, setCount: 2, unit: .seconds, repRange: 30...30),
-            ExerciseTemplate(name: "Bike", order: 3, setCount: 1, unit: .minutes, repRange: 10...15),
+            ExerciseTemplate(name: "Squat", order: 0, setCount: 3, unit: .bodyweight, repRange: 12...15, supersetGroup: 0),
+            ExerciseTemplate(name: "Deadlift", order: 1, setCount: 3, unit: .pounds(30), repRange: 8...12, supersetGroup: 0),
+            ExerciseTemplate(name: "Wallsit", order: 2, setCount: 2, unit: .seconds, repRange: 30...30, supersetGroup: nil),
+            ExerciseTemplate(name: "Bike", order: 3, setCount: 1, unit: .minutes, repRange: 10...15, supersetGroup: nil),
         ])
         
         container.mainContext.insert(workout)
@@ -227,7 +247,7 @@ final class WorkoutTemplate: Codable {
 @Model
 final class ExerciseTemplate: Codable {
     enum CodingKeys: String, CodingKey {
-        case name, order, setCount, unit, repRange
+        case name, order, setCount, unit, repRange, supersetGroup
     }
     
     init(from decoder: any Decoder) throws {
@@ -238,6 +258,7 @@ final class ExerciseTemplate: Codable {
         setCount = try container.decode(Int.self, forKey: .setCount)
         unit = try container.decode(Unit.self, forKey: .unit)
         repRange = try container.decode(ClosedRange<Int>.self, forKey: .repRange)
+        supersetGroup = try container.decode(Int?.self, forKey: .supersetGroup)
     }
     
     func encode(to encoder: any Encoder) throws {
@@ -248,14 +269,16 @@ final class ExerciseTemplate: Codable {
         try container.encode(setCount, forKey: .setCount)
         try container.encode(unit, forKey: .unit)
         try container.encode(repRange, forKey: .repRange)
+        try container.encode(supersetGroup, forKey: .supersetGroup)
     }
     
-    internal init(name: String, order: Int, setCount: Int, unit: Unit, repRange: ClosedRange<Int>) {
+    internal init(name: String, order: Int, setCount: Int, unit: Unit, repRange: ClosedRange<Int>, supersetGroup: Int?) {
         self.name = name
         self.order = order
         self.setCount = setCount
         self.unit = unit
         self.repRange = repRange
+        self.supersetGroup = supersetGroup
     }
     
     private(set) var name: String
@@ -263,13 +286,14 @@ final class ExerciseTemplate: Codable {
     private(set) var setCount: Int
     private(set) var unit: Unit
     private(set) var repRange: ClosedRange<Int>
+    private(set) var supersetGroup: Int?
     
     func newExercise() -> Exercise {
-        Exercise(name: name, order: order, unit: unit, repRange: repRange, setCount: setCount)
+        Exercise(name: name, order: order, unit: unit, repRange: repRange, setCount: setCount, supersetGroup: supersetGroup)
     }
     
     func prototype() -> WorkoutTemplatePrototype.Exercise {
-        WorkoutTemplatePrototype.Exercise(name: name, setCount: setCount, unitValue: unit.value, unit: unit, repRangeLower: repRange.lowerBound, repRangeUpper: repRange.upperBound)
+        WorkoutTemplatePrototype.Exercise(name: name, setCount: setCount, unitValue: unit.value, unit: unit, repRangeLower: repRange.lowerBound, repRangeUpper: repRange.upperBound, supersetGroup: supersetGroup)
     }
 }
 
@@ -336,10 +360,11 @@ final class ExerciseTemplate: Codable {
             lhs.setCount == rhs.setCount &&
             lhs.unit == rhs.unit &&
             lhs.repRangeLower == rhs.repRangeLower &&
-            lhs.repRangeUpper == rhs.repRangeUpper
+            lhs.repRangeUpper == rhs.repRangeUpper &&
+            lhs.supersetGroup == rhs.supersetGroup
         }
         
-        internal init(name: String = "", setCount: Int? = nil, unitValue: Int? = nil, unit: Unit? = nil, repRangeLower: Int? = nil, repRangeUpper: Int? = nil) {
+        internal init(name: String = "", setCount: Int? = nil, unitValue: Int? = nil, unit: Unit? = nil, repRangeLower: Int? = nil, repRangeUpper: Int? = nil, supersetGroup: Int?) {
             self.name = name
             self.setCount = setCount
             self.unitValue = unitValue
@@ -355,6 +380,7 @@ final class ExerciseTemplate: Codable {
         var unit: Unit
         var repRangeLower: Int? = nil
         var repRangeUpper: Int? = nil
+        var supersetGroup: Int? = nil
         
         func createTemplate(row: Int) throws -> ExerciseTemplate {
             guard !name.isEmpty else {
@@ -381,7 +407,7 @@ final class ExerciseTemplate: Codable {
                 throw CreateError.repRange(row: row)
             }
             
-            return .init(name: name, order: row, setCount: setCount, unit: unit, repRange: repRangeLower...repRangeUpper)
+            return .init(name: name, order: row, setCount: setCount, unit: unit, repRange: repRangeLower...repRangeUpper, supersetGroup: supersetGroup)
         }
     }
     

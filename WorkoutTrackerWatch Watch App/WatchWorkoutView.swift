@@ -62,7 +62,6 @@ struct WatchWorkoutView: View {
                         .font(.largeTitle)
                     
                     Button("Complete") {
-                        connectivityManager.flushCache(templateName: viewModel.templateName)
                         workoutManager.completeWorkout()
                         viewModel.complete()
                     }

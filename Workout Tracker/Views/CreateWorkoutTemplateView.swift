@@ -63,7 +63,8 @@ struct CreateWorkoutTemplateView: View {
                                                     unitValue: lastExercise?.unitValue,
                                                     unit: lastExercise?.unit,
                                                     repRangeLower: lastExercise?.repRangeLower,
-                                                    repRangeUpper: lastExercise?.repRangeUpper))
+                                                    repRangeUpper: lastExercise?.repRangeUpper,
+                                                    supersetGroup: lastExercise?.supersetGroup))
                     isDirty = true
                 }
             }
@@ -117,7 +118,7 @@ struct CreateWorkoutTemplateView: View {
     
     struct Row: View {
         enum FocusedField {
-            case name, sets, unit, repsLower, repsUpper
+            case name, sets, unit, repsLower, repsUpper, superset
             
             var next: FocusedField? {
                 switch self {
@@ -125,7 +126,8 @@ struct CreateWorkoutTemplateView: View {
                 case .sets: .unit
                 case .unit: .repsLower
                 case .repsLower: .repsUpper
-                case .repsUpper: nil
+                case .repsUpper: .superset
+                case .superset: nil
                 }
             }
         }
@@ -187,6 +189,12 @@ struct CreateWorkoutTemplateView: View {
                         }
                     }
                 }
+                TextField("Superset Group", value: $exercise.supersetGroup, format: .number)
+                    .submitLabel(.done)
+                    .focused($focus, equals: .superset)
+                    .onChange(of: exercise.supersetGroup) {
+                        isDirty = true
+                    }
                 Spacer()
             }
             .onSubmit {
@@ -207,7 +215,7 @@ struct CreateWorkoutTemplateView: View {
                     .submitLabel(.next)
                 Text("-")
                 NumericTextField(value: $exercise.repRangeUpper, isDirty: $isDirty)
-                    .submitLabel(.done)
+                    .submitLabel(.next)
                     .focused($focus, equals: .repsUpper)
             }
         }

@@ -12,6 +12,8 @@
 		6D617D782ED199FA00158396 /* LogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D617D772ED199F700158396 /* LogsView.swift */; };
 		6D617D792ED19A5600158396 /* LogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D617D772ED199F700158396 /* LogsView.swift */; };
 		B90BCD152D66EC70008D1F4A /* RepButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90BCD142D66EC70008D1F4A /* RepButtons.swift */; };
+		B978BCB62FAE86AB00CE86F2 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B978BCB52FAE86A600CE86F2 /* Collection.swift */; };
+		B978BCB72FAE86AB00CE86F2 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B978BCB52FAE86A600CE86F2 /* Collection.swift */; };
 		B9C2DC152D8F856800C86913 /* WorkoutTrackerWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B9C2DC082D8F856700C86913 /* WorkoutTrackerWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B9C2DC1A2D8F87A000C86913 /* Workout.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9DE1AA32D3DB39B00914098 /* Workout.swift */; };
 		B9C2DC222D8F9D2D00C86913 /* Fractions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9C2DC212D8F9D2500C86913 /* Fractions.swift */; };
@@ -92,6 +94,7 @@
 		B90BCD142D66EC70008D1F4A /* RepButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepButtons.swift; sourceTree = "<group>"; };
 		B96B05682D71758B003EAD97 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		B96B056A2D71758B003EAD97 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		B978BCB52FAE86A600CE86F2 /* Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
 		B9C2DC082D8F856700C86913 /* WorkoutTrackerWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WorkoutTrackerWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9C2DC212D8F9D2500C86913 /* Fractions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fractions.swift; sourceTree = "<group>"; };
 		B9C2DC282D90E9A600C86913 /* Workout-Tracker-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Workout-Tracker-Info.plist"; sourceTree = SOURCE_ROOT; };
@@ -201,6 +204,7 @@
 		B9C2DC202D8F9D1F00C86913 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				B978BCB52FAE86A600CE86F2 /* Collection.swift */,
 				B9C2DC2C2D91162500C86913 /* ModelContainer.swift */,
 				B9C2DC212D8F9D2500C86913 /* Fractions.swift */,
 			);
@@ -441,6 +445,7 @@
 				B9C2DC2D2D91162B00C86913 /* ModelContainer.swift in Sources */,
 				6D617D792ED19A5600158396 /* LogsView.swift in Sources */,
 				6D617D762ED1959400158396 /* Logger.swift in Sources */,
+				B978BCB72FAE86AB00CE86F2 /* Collection.swift in Sources */,
 				B9C2DC232D8F9D9B00C86913 /* Fractions.swift in Sources */,
 				B9C2DC1A2D8F87A000C86913 /* Workout.swift in Sources */,
 			);
@@ -452,6 +457,7 @@
 			files = (
 				B9DE1AA82D44B06000914098 /* CreateWorkoutView.swift in Sources */,
 				B9C2DC2E2D91162B00C86913 /* ModelContainer.swift in Sources */,
+				B978BCB62FAE86AB00CE86F2 /* Collection.swift in Sources */,
 				B9DE1AA62D3DCE0A00914098 /* CompletedWorkoutView.swift in Sources */,
 				B9DE1AAE2D44BA4A00914098 /* CreateWorkoutTemplateView.swift in Sources */,
 				B90BCD152D66EC70008D1F4A /* RepButtons.swift in Sources */,
@@ -781,7 +787,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "DanielJohns.Workout-TrackerTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -799,7 +805,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "DanielJohns.Workout-TrackerTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
