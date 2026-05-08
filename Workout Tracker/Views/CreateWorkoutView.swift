@@ -14,6 +14,8 @@ struct CreateWorkoutView: View {
     @Environment(\.isPresented) private var isPresented
     @Query(sort: \WorkoutTemplate.name) private var templates: [WorkoutTemplate]
     
+    @State private var isResettingTemplates: Bool = false
+    
     var body: some View {
         List(templates) { template in
             NavigationLink(value: startWorkout(template)) {
@@ -32,12 +34,32 @@ struct CreateWorkoutView: View {
         }
         .toolbar {
             ToolbarItem {
+                Button(action: resetTemplates) {
+                    Label("Reset Templates", systemImage: "arrow.counterclockwise")
+                }
+            }
+            ToolbarItem {
                 Button(action: addItem) {
                     Label("Add Item", systemImage: "plus")
                 }
             }
         }
         .navigationTitle("Start New Workout")
+        .alert("Reset Templates?", isPresented: $isResettingTemplates) {
+            Button("Reset", role: .destructive) {
+                do {
+                    try modelContext.delete(model: WorkoutTemplate.self)
+                    for template in WorkoutTemplate.defaults {
+                        modelContext.insert(template)
+                    }
+                    try modelContext.save()
+                } catch {
+                    Logger.shared.log("Failed to reset templates: \(error)")
+                }
+                PhoneConnectivityManager.shared.sendTemplates()
+            }
+            Button("Cancel", role: .cancel) { }
+        }
     }
     
     private func startWorkout(_ template: WorkoutTemplate) -> NavigationManager.ViewDestination {
@@ -48,6 +70,10 @@ struct CreateWorkoutView: View {
         withAnimation {
             navigationManager.goToCreateWorkoutTemplate()
         }
+    }
+    
+    private func resetTemplates() {
+        isResettingTemplates = true
     }
 }
 
