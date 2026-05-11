@@ -215,11 +215,11 @@ final class WorkoutTemplate: Codable {
             ]),
             WorkoutTemplate(name: "Arms", exercises: [
                 ExerciseTemplate(name: "Shoulder Press", order: 0, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 0),
-                ExerciseTemplate(name: "Hammer Curl", order: 1, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 0),
-                ExerciseTemplate(name: "Tricep Extension", order: 2, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 1),
-                ExerciseTemplate(name: "Lateral Raise", order: 3, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 1),
-                ExerciseTemplate(name: "Concentration Curl", order: 4, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 2),
-                ExerciseTemplate(name: "Tricep Pushdown", order: 5, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 2),
+                ExerciseTemplate(name: "Concentration Curl", order: 1, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 0),
+                ExerciseTemplate(name: "Tricep Extension", order: 2, setCount: 2, unit: .pounds(20), repRange: 8...10, supersetGroup: 1),
+                ExerciseTemplate(name: "Lateral Raise", order: 3, setCount: 2, unit: .pounds(8), repRange: 8...10, supersetGroup: 1),
+                ExerciseTemplate(name: "Tricep Pushdown", order: 4, setCount: 2, unit: .pounds(30), repRange: 8...10, supersetGroup: 2),
+                ExerciseTemplate(name: "Hammer Curl", order: 5, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 2),
             ])
         ]
         
@@ -371,6 +371,7 @@ final class ExerciseTemplate: Codable {
             self.unit = unit?.with(newValue: 1) ?? .pounds(1)
             self.repRangeLower = repRangeLower
             self.repRangeUpper = repRangeUpper
+            self.supersetGroup = supersetGroup
         }
         
         let id = UUID()

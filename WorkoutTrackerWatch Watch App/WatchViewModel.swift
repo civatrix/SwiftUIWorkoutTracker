@@ -71,8 +71,20 @@ class WatchViewModel: ObservableObject {
     }
     
     func start(template: WorkoutTemplate) {
+        UserDefaults.standard.set(Date(), forKey: template.name)
         workoutData = template.newWorkout().createWatchData()
         templateName = template.name
         activeSet = 0
+    }
+    
+    func lastDate(for template: WorkoutTemplate) -> String {
+        guard let date = UserDefaults.standard.object(forKey: template.name) as? Date else {
+            return ""
+        }
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        
+        return formatter.string(from: date)
     }
 }
