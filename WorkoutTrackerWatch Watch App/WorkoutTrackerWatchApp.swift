@@ -11,18 +11,16 @@ import SwiftUI
 struct WorkoutTrackerWatch_Watch_AppApp: App {
     @StateObject private var viewModel = WatchViewModel()
     @StateObject private var connectivityManager = WatchConnectivityManager()
-    @StateObject private var workoutManager = WorkoutManager()
         
     var body: some Scene {
         WindowGroup {
             SessionPagingView()
                 .onAppear {
-                    workoutManager.requestAuthorization()
+                    viewModel.requestAuthorization()
                     connectivityManager.viewModel = viewModel
                 }
                 .environmentObject(viewModel)
                 .environmentObject(connectivityManager)
-                .environmentObject(workoutManager)
         }
     }
 }

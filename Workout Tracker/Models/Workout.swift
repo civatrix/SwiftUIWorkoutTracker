@@ -203,7 +203,8 @@ final class WorkoutTemplate: Codable {
                 ExerciseTemplate(name: "Squats Heel Raised", order: 2, setCount: 3, unit: .bodyweight, repRange: 10...10, supersetGroup: 1),
                 ExerciseTemplate(name: "Hamstring Curl", order: 3, setCount: 3, unit: .pounds(20), repRange: 12...12, supersetGroup: 1),
                 ExerciseTemplate(name: "Bench Bridge", order: 4, setCount: 3, unit: .bodyweight, repRange: 8...8, supersetGroup: 2),
-                ExerciseTemplate(name: "Calf Raises", order: 5, setCount: 3, unit: .bodyweight, repRange: 10...12, supersetGroup: 2),
+                ExerciseTemplate(name: "Plank", order: 5, setCount: 3, unit: .bodyweight, repRange: 12...15, supersetGroup: 2),
+                ExerciseTemplate(name: "Hopping", order: 6, setCount: 3, unit: .seconds, repRange: 15...15, supersetGroup: nil),
             ]),
             WorkoutTemplate(name: "Legs Day 2", exercises: [
                 ExerciseTemplate(name: "Leg Lifts", order: 0, setCount: 3, unit: .bodyweight, repRange: 10...10, supersetGroup: nil),
@@ -211,15 +212,17 @@ final class WorkoutTemplate: Codable {
                 ExerciseTemplate(name: "Split Deadlift", order: 2, setCount: 2, unit: .pounds(20), repRange: 10...10, supersetGroup: 0),
                 ExerciseTemplate(name: "Knee Extension", order: 3, setCount: 3, unit: .pounds(15), repRange: 12...12, supersetGroup: 1),
                 ExerciseTemplate(name: "Elevated Bridge", order: 4, setCount: 2, unit: .bodyweight, repRange: 8...8, supersetGroup: 1),
+                ExerciseTemplate(name: "Plank", order: 5, setCount: 3, unit: .bodyweight, repRange: 12...15, supersetGroup: nil),
                 ExerciseTemplate(name: "Calf Raises", order: 5, setCount: 3, unit: .bodyweight, repRange: 10...12, supersetGroup: nil),
             ]),
             WorkoutTemplate(name: "Arms", exercises: [
-                ExerciseTemplate(name: "Shoulder Press", order: 0, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 0),
-                ExerciseTemplate(name: "Concentration Curl", order: 1, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 0),
-                ExerciseTemplate(name: "Tricep Extension", order: 2, setCount: 2, unit: .pounds(20), repRange: 8...10, supersetGroup: 1),
-                ExerciseTemplate(name: "Lateral Raise", order: 3, setCount: 2, unit: .pounds(8), repRange: 8...10, supersetGroup: 1),
-                ExerciseTemplate(name: "Tricep Pushdown", order: 4, setCount: 2, unit: .pounds(30), repRange: 8...10, supersetGroup: 2),
-                ExerciseTemplate(name: "Hammer Curl", order: 5, setCount: 2, unit: .pounds(10), repRange: 8...10, supersetGroup: 2),
+                ExerciseTemplate(name: "Shoulder Press", order: 0, setCount: 3, unit: .pounds(15), repRange: 8...10, supersetGroup: 0),
+                ExerciseTemplate(name: "Concentration Curl", order: 1, setCount: 3, unit: .pounds(15), repRange: 8...10, supersetGroup: 0),
+                ExerciseTemplate(name: "Tricep Extension", order: 2, setCount: 3, unit: .pounds(30), repRange: 8...10, supersetGroup: 1),
+                ExerciseTemplate(name: "Lateral Raise", order: 3, setCount: 3, unit: .pounds(8), repRange: 8...10, supersetGroup: 1),
+                ExerciseTemplate(name: "Tricep Pushdown", order: 4, setCount: 3, unit: .pounds(50), repRange: 8...10, supersetGroup: 2),
+                ExerciseTemplate(name: "Hammer Curl", order: 5, setCount: 3, unit: .pounds(10), repRange: 8...10, supersetGroup: 2),
+                ExerciseTemplate(name: "Side Plank", order: 6, setCount: 3, unit: .bodyweight, repRange: 12...15, supersetGroup: nil),
             ])
         ]
         
@@ -353,7 +356,7 @@ final class ExerciseTemplate: Codable {
     var name = ""
     var exercises: [Exercise] = []
     
-    final class Exercise: Identifiable, Equatable {
+    @Observable final class Exercise: Identifiable, Equatable {
         static func == (lhs: WorkoutTemplatePrototype.Exercise, rhs: WorkoutTemplatePrototype.Exercise) -> Bool {
             lhs.id == rhs.id &&
             lhs.name == rhs.name &&

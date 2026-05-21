@@ -121,6 +121,11 @@ class PhoneConnectivityManager: NSObject, WCSessionDelegate {
             Logger.shared.log("Error sending workout: \(error)")
         }
     }
+    
+    func sendCompletion() {
+        guard WCSession.default.activationState == .activated else { return }
+        WCSession.default.sendMessage(["complete": true], replyHandler: nil)
+    }
 }
 #elseif os(watchOS)
 import WatchKit
@@ -140,6 +145,13 @@ class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: (any Error)?) {
         if let error {
             Logger.shared.log("Error activating session: \(error)")
+        }
+    }
+    
+    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+        Task { @MainActor in
+            Logger.shared.log("Completing from phone")
+            self.viewModel?.complete()
         }
     }
     
@@ -185,6 +197,9 @@ class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
             Logger.shared.log("Send successful.")
         }, errorHandler: { error in
             Logger.shared.log("\(error.localizedDescription).")
+            DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
+                self.sendWorkoutData(exercise: exercise, completedReps: completedReps, templateName: templateName)
+            }
         })
     }
 }

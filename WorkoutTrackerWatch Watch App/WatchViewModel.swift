@@ -30,7 +30,12 @@ class WatchViewModel: ObservableObject {
     @Published
     var elapsedTime: Int = 0
     
+    var heartRate: Double {
+        workoutManager.heartRate
+    }
+    
     var templateName: String?
+    private let workoutManager: WorkoutManager = WorkoutManager()
     private var timerStart: Date?
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private var cancelBag: Set<AnyCancellable> = []
@@ -68,6 +73,7 @@ class WatchViewModel: ObservableObject {
         workoutData = []
         activeSet = -1
         templateName = nil
+        workoutManager.completeWorkout()
     }
     
     func start(template: WorkoutTemplate) {
@@ -75,6 +81,7 @@ class WatchViewModel: ObservableObject {
         workoutData = template.newWorkout().createWatchData()
         templateName = template.name
         activeSet = 0
+        workoutManager.startWorkout()
     }
     
     func lastDate(for template: WorkoutTemplate) -> String {
@@ -86,5 +93,9 @@ class WatchViewModel: ObservableObject {
         formatter.dateFormat = "MMM d"
         
         return formatter.string(from: date)
+    }
+    
+    func requestAuthorization() {
+        workoutManager.requestAuthorization()
     }
 }

@@ -11,7 +11,6 @@ import SwiftData
 struct WatchWorkoutView: View {
     @EnvironmentObject private var viewModel: WatchViewModel
     @EnvironmentObject private var connectivityManager: WatchConnectivityManager
-    @EnvironmentObject private var workoutManager: WorkoutManager
     
     @State private var initialReps = 0
     @State private var showSalute = false
@@ -20,7 +19,7 @@ struct WatchWorkoutView: View {
         if !viewModel.workoutData.isEmpty {
             VStack(alignment: .leading) {
                 HStack {
-                    Text(workoutManager.heartRate.formatted(.number.precision(.fractionLength(0))) + " bpm")
+                    Text(viewModel.heartRate.formatted(.number.precision(.fractionLength(0))) + " bpm")
                         .font(.title)
                         .foregroundStyle(Color.red)
                 }
@@ -39,7 +38,6 @@ struct WatchWorkoutView: View {
                     .onAppear {
                         let workout = viewModel.workoutData[viewModel.activeSet]
                         initialReps = workout.completedReps ?? workout.repRange.upperBound
-                        workoutManager.startWorkout()
                     }
                     .overlay {
                         if showSalute {
@@ -62,7 +60,7 @@ struct WatchWorkoutView: View {
                         .font(.largeTitle)
                     
                     Button("Complete") {
-                        workoutManager.completeWorkout()
+                        showSalute = false
                         viewModel.complete()
                     }
                 }
