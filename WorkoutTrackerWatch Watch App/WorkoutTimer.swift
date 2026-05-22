@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct WorkoutTimer: View {
-    @EnvironmentObject var viewModel: WatchViewModel
+    @Environment(WatchViewModel.self) var viewModel
     
     let range: ClosedRange<Int>
     @Binding var value: Int
@@ -93,5 +93,5 @@ struct BarSegment: Shape {
 #Preview {
     @State @Previewable var value: Int = 12
     WorkoutTimer(range: 5...10, value: $value)
-        .environmentObject(WatchViewModel.preview)
+        .environment(WatchViewModel.preview)
 }

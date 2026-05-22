@@ -9,12 +9,13 @@ import Foundation
 import HealthKit
 import WatchKit
 
-class WorkoutManager: NSObject, ObservableObject {
+@Observable
+class WorkoutManager: NSObject {
     let healthStore = HKHealthStore()
     var builder: HKLiveWorkoutBuilder?
     var session: WKExtendedRuntimeSession?
     
-    @Published var heartRate: Double = 0
+    var heartRate: Double = 0
     
     func startWorkout() {
         guard builder == nil else { return }

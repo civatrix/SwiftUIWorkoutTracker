@@ -57,19 +57,19 @@ struct WatchExerciseRow: View {
     @State @Previewable var value: Int = 12
     WatchExerciseRow(title: "Squat 30 lbs", setNumber: "1/3", unit: .pounds(30), range: 8...12, value: $value) { _ in }
         .tint(.purple)
-        .environmentObject(WatchViewModel.preview)
+        .environment(WatchViewModel.preview)
 }
 
 #Preview("Minutes") {
     @State @Previewable var value: Int = 15
     WatchExerciseRow(title: "Bike", setNumber: "1/3", unit: .minutes, range: 10...15, value: $value) { _ in }
         .tint(.purple)
-        .environmentObject(WatchViewModel.preview)
+        .environment(WatchViewModel.preview)
 }
 
 #Preview("Seconds") {
     @State @Previewable var value: Int = 45
     WatchExerciseRow(title: "Wall sit", setNumber: "1/3", unit: .seconds, range: 30...45, value: $value) { _ in }
         .tint(.purple)
-        .environmentObject(WatchViewModel.preview)
+        .environment(WatchViewModel.preview)
 }

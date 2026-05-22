@@ -9,8 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct WatchWorkoutView: View {
-    @EnvironmentObject private var viewModel: WatchViewModel
-    @EnvironmentObject private var connectivityManager: WatchConnectivityManager
+    @Environment(WatchViewModel.self) private var viewModel
+    @Environment(WatchConnectivityManager.self) private var connectivityManager
     
     @State private var initialReps = 0
     @State private var showSalute = false
@@ -87,8 +87,7 @@ struct WatchWorkoutView: View {
 
 #Preview {
     WatchWorkoutView()
-        .environmentObject(WatchViewModel.preview)
-        .environmentObject(WatchConnectivityManager())
-        .environmentObject(WorkoutManager())
+        .environment(WatchViewModel.preview)
+        .environment(WatchConnectivityManager())
         .tint(Color.purple)
 }

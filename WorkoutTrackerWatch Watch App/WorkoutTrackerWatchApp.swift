@@ -9,8 +9,8 @@ import SwiftUI
 
 @main
 struct WorkoutTrackerWatch_Watch_AppApp: App {
-    @StateObject private var viewModel = WatchViewModel()
-    @StateObject private var connectivityManager = WatchConnectivityManager()
+    @State private var viewModel = WatchViewModel()
+    @State private var connectivityManager = WatchConnectivityManager()
         
     var body: some Scene {
         WindowGroup {
@@ -19,8 +19,8 @@ struct WorkoutTrackerWatch_Watch_AppApp: App {
                     viewModel.requestAuthorization()
                     connectivityManager.viewModel = viewModel
                 }
-                .environmentObject(viewModel)
-                .environmentObject(connectivityManager)
+                .environment(viewModel)
+                .environment(connectivityManager)
         }
     }
 }

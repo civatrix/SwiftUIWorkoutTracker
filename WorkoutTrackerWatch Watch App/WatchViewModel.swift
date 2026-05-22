@@ -11,25 +11,18 @@ import SwiftData
 import WatchKit
 
 @MainActor
-class WatchViewModel: ObservableObject {
+@Observable
+class WatchViewModel {
     nonisolated static let TemplateDataFileURL = URL.documentsDirectory.appending(path: "templates.json")
     static let preview = {
         let viewModel = WatchViewModel()
         return viewModel
     }()
     
-    @Published
     var workoutData: [WatchSetData] = []
-    
-    @Published
     var templates: [WorkoutTemplate] = []
-    
-    @Published
     var activeSet: Int = 0
-    
-    @Published
     var elapsedTime: Int = 0
-    
     var heartRate: Double {
         workoutManager.heartRate
     }

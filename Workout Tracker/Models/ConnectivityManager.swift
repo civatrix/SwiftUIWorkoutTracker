@@ -129,7 +129,8 @@ class PhoneConnectivityManager: NSObject, WCSessionDelegate {
 }
 #elseif os(watchOS)
 import WatchKit
-class WatchConnectivityManager: NSObject, ObservableObject, WCSessionDelegate {
+@Observable
+class WatchConnectivityManager: NSObject, WCSessionDelegate {
     var viewModel: WatchViewModel?
     
     override init() {

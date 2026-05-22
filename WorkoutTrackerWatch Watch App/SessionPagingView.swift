@@ -9,7 +9,6 @@ import SwiftUI
 import WatchKit
 
 struct SessionPagingView: View {
-    @EnvironmentObject var workoutManager: WorkoutManager
     @Environment(\.isLuminanceReduced) var isLuminanceReduced
     @State private var selection: Tab = .workout
 
