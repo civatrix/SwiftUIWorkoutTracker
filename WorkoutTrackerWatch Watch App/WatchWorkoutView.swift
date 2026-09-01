@@ -66,19 +66,7 @@ struct WatchWorkoutView: View {
                 }
             }
         } else if !viewModel.templates.isEmpty {
-            List(viewModel.templates, id: \.self) { template in
-                Button {
-                    viewModel.start(template: template)
-                }
-                label: {
-                    HStack {
-                        Text(template.name)
-                        Spacer()
-                        Text(viewModel.lastDate(for: template))
-                            .font(.footnote)
-                    }
-                }
-            }
+            WatchWorkoutListView(viewModel: viewModel)
         } else {
             Text("Waiting for phone to send templates or start workout...")
         }
