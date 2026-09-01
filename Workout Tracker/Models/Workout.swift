@@ -42,12 +42,12 @@ final class Workout {
         var seenGroups: Set<Int> = []
         var watchData: [WatchSetData] = []
         for exercise in exercises {
-            let repCount = exercise.repsCompleted.count
             if let group = exercise.supersetGroup {
                 guard !seenGroups.contains(group) else { continue }
                 let data = exercises
                     .filter { $0.supersetGroup == group }
                     .map { exercise in
+                        let repCount = exercise.repsCompleted.count
                         return exercise.repsCompleted.enumerated().map { (setIndex, reps) in
                             WatchSetData(name: exercise.longName, setNumber: "\(setIndex + 1)/\(repCount)", repRange: exercise.repRange, exerciseName: exercise.name, setIndex: setIndex, unit: exercise.unit, completedReps: reps)
                         }
@@ -55,6 +55,7 @@ final class Workout {
                 watchData.append(contentsOf: data.interleaved())
                 seenGroups.insert(group)
             } else {
+                let repCount = exercise.repsCompleted.count
                 let data = exercise.repsCompleted.enumerated().map { (setIndex, reps) in
                     WatchSetData(name: exercise.longName, setNumber: "\(setIndex + 1)/\(repCount)", repRange: exercise.repRange, exerciseName: exercise.name, setIndex: setIndex, unit: exercise.unit, completedReps: reps)
                 }
