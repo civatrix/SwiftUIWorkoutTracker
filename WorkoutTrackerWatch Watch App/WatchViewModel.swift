@@ -65,6 +65,11 @@ class WatchViewModel {
         sortTemplates()
     }
     
+    func setTemplates(_ templates: [WorkoutTemplate]) {
+        unsortedTemplates = templates
+        sortTemplates()
+    }
+    
     func toggleSort() {
         switch sortOrder {
         case .lastUsed: sortOrder = .name
@@ -84,7 +89,8 @@ class WatchViewModel {
                 switch (lastUsedDates[$0.name], lastUsedDates[$1.name]) {
                 case let (.some(lhs), .some(rhs)): return lhs < rhs
                 case (.some, .none): return false
-                case (.none, .some), (.none, .none): return true
+                case (.none, .some): return true
+                case (.none, .none): return $0.name < $1.name
                 }
             })
         }
