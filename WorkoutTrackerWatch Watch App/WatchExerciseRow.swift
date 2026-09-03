@@ -9,7 +9,6 @@ import SwiftUI
 
 struct WatchExerciseRow: View {
     let title: String
-    let setNumber: String
     let unit: Unit
     let range: ClosedRange<Int>
     @Binding var value: Int
@@ -19,13 +18,8 @@ struct WatchExerciseRow: View {
 
     var body: some View {
         VStack {
-            HStack {
-                Text(title)
-                    .truncationMode(.middle)
-                Spacer()
-                Text(setNumber)
-                    .font(.fraction(.body))
-            }
+            Text(title)
+                .truncationMode(.middle)
             
             switch unit {
             case .seconds:
@@ -55,21 +49,21 @@ struct WatchExerciseRow: View {
 
 #Preview("Pounds") {
     @State @Previewable var value: Int = 12
-    WatchExerciseRow(title: "Squat 30 lbs", setNumber: "1/3", unit: .pounds(30), range: 8...12, value: $value) { _ in }
+    WatchExerciseRow(title: "Squat 30 lbs", unit: .pounds(30), range: 8...12, value: $value) { _ in }
         .tint(.purple)
         .environment(WatchViewModel.preview)
 }
 
 #Preview("Minutes") {
     @State @Previewable var value: Int = 15
-    WatchExerciseRow(title: "Bike", setNumber: "1/3", unit: .minutes, range: 10...15, value: $value) { _ in }
+    WatchExerciseRow(title: "Bike", unit: .minutes, range: 10...15, value: $value) { _ in }
         .tint(.purple)
         .environment(WatchViewModel.preview)
 }
 
 #Preview("Seconds") {
     @State @Previewable var value: Int = 45
-    WatchExerciseRow(title: "Wall sit", setNumber: "1/3", unit: .seconds, range: 30...45, value: $value) { _ in }
+    WatchExerciseRow(title: "Wall sit", unit: .seconds, range: 30...45, value: $value) { _ in }
         .tint(.purple)
         .environment(WatchViewModel.preview)
 }

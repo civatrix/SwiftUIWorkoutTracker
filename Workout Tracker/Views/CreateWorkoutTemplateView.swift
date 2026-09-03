@@ -64,7 +64,8 @@ struct CreateWorkoutTemplateView: View {
                                                     unit: lastExercise?.unit,
                                                     repRangeLower: lastExercise?.repRangeLower,
                                                     repRangeUpper: lastExercise?.repRangeUpper,
-                                                    supersetGroup: lastExercise?.supersetGroup))
+                                                    supersetGroup: lastExercise?.supersetGroup,
+                                                    seperateLimbs: lastExercise?.seperateLimbs))
                     isDirty = true
                 }
             }
@@ -189,12 +190,18 @@ struct CreateWorkoutTemplateView: View {
                         }
                     }
                 }
-                TextField("Superset Group", value: $exercise.supersetGroup, format: .number)
-                    .submitLabel(.done)
-                    .focused($focus, equals: .superset)
-                    .onChange(of: exercise.supersetGroup) {
-                        isDirty = true
-                    }
+                HStack {
+                    TextField("Superset Group", value: $exercise.supersetGroup, format: .number)
+                        .submitLabel(.done)
+                        .focused($focus, equals: .superset)
+                        .onChange(of: exercise.supersetGroup) {
+                            isDirty = true
+                        }
+                    Toggle("Seperate Limbs", isOn: $exercise.seperateLimbs)
+                        .onChange(of: exercise.seperateLimbs) { oldValue, newValue in
+                            isDirty = true
+                        }
+                }
                 Spacer()
             }
             .onSubmit {

@@ -18,15 +18,18 @@ struct WatchWorkoutView: View {
     var body: some View {
         if !viewModel.workoutData.isEmpty {
             VStack(alignment: .leading) {
-                HStack {
-                    Text(viewModel.heartRate.formatted(.number.precision(.fractionLength(0))) + " bpm")
-                        .font(.title)
-                        .foregroundStyle(Color.red)
-                }
-            
                 if viewModel.workoutData.indices.contains(viewModel.activeSet) {
                     let exercise = viewModel.workoutData[viewModel.activeSet]
-                    WatchExerciseRow(title: exercise.name, setNumber: exercise.setNumber, unit: exercise.unit, range: exercise.repRange, value: $initialReps) {
+                    HStack {
+                        Text(viewModel.heartRate.formatted(.number.precision(.fractionLength(0))) + " bpm")
+                            .font(.title)
+                            .foregroundStyle(Color.red)
+                        Spacer()
+                        Text(exercise.setNumber)
+                            .font(.fraction(.title3))
+                    }
+                    
+                    WatchExerciseRow(title: exercise.name, unit: exercise.unit, range: exercise.repRange, value: $initialReps) {
                         showSalute = true
                         connectivityManager.sendWorkoutData(exercise: exercise, completedReps: $0, templateName: viewModel.templateName)
                         viewModel.activeSet += 1
@@ -55,7 +58,7 @@ struct WatchWorkoutView: View {
                     }
                     .id(exercise.id)
                 } else {
-                    Text("All exercises complete!")
+                    Text("Workout complete!")
                         .lineLimit(nil)
                         .font(.largeTitle)
                     

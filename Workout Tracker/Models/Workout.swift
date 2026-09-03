@@ -47,10 +47,10 @@ final class Workout {
                 let data = exercises
                     .filter { $0.supersetGroup == group }
                     .map { $0.createWatchData() }
-                watchData.append(contentsOf: data.interleaved())
+                watchData.append(contentsOf: data.interleaved().flatMap { $0 })
                 seenGroups.insert(group)
             } else {
-                watchData.append(contentsOf: exercise.createWatchData())
+                watchData.append(contentsOf: exercise.createWatchData().flatMap { $0 })
             }
         }
         
@@ -66,10 +66,10 @@ final class Workout {
         let container = ModelContainer.preview
         
         let workout = Workout(name: "Test Workout", date: Date(), exercises: [
-            Exercise(name: "Squat", order: 0, unit: .bodyweight, repRange: 12...15, setCount: 3, supersetGroup: 0),
-            Exercise(name: "Deadlift", order: 1, unit: .pounds(30), repRange: 8...12, setCount: 3, supersetGroup: 0),
-            Exercise(name: "Wallsit", order: 2, unit: .seconds, repRange: 30...30, setCount: 2, supersetGroup: 1),
-            Exercise(name: "Bike", order: 3, unit: .minutes, repRange: 10...15, setCount: 1, supersetGroup: 1),
+            Exercise(name: "Squat", order: 0, unit: .bodyweight, repRange: 12...15, setCount: 3, supersetGroup: 0, seperateLimbs: false),
+            Exercise(name: "Deadlift", order: 1, unit: .pounds(30), repRange: 8...12, setCount: 3, supersetGroup: 0, seperateLimbs: true),
+            Exercise(name: "Wallsit", order: 2, unit: .seconds, repRange: 30...30, setCount: 2, supersetGroup: 1, seperateLimbs: false),
+            Exercise(name: "Bike", order: 3, unit: .minutes, repRange: 10...15, setCount: 1, supersetGroup: 1, seperateLimbs: false),
         ])
         
         container.mainContext.insert(workout)
@@ -94,24 +94,26 @@ struct WatchSetData: Codable, Equatable, Identifiable {
 
 @Model
 final class Exercise {
-    internal convenience init(name: String, order: Int, unit: Unit, repRange: ClosedRange<Int>, setCount: Int, supersetGroup: Int?) {
+    internal convenience init(name: String, order: Int, unit: Unit, repRange: ClosedRange<Int>, setCount: Int, supersetGroup: Int?, seperateLimbs: Bool) {
         let sets: [ExerciseSet] = (0..<setCount).map {
             .init(name: name, order: $0, repRange: repRange, unit: unit)
         }
-        self.init(name: name, order: order, supersetGroup: supersetGroup, sets: sets)
+        self.init(name: name, order: order, supersetGroup: supersetGroup, sets: sets, seperateLimbs: seperateLimbs)
     }
     
-    internal init(name: String, order: Int, supersetGroup: Int?, sets: [ExerciseSet]) {
+    internal init(name: String, order: Int, supersetGroup: Int?, sets: [ExerciseSet], seperateLimbs: Bool) {
         self.name = name
         self.order = order
         self.supersetGroup = supersetGroup
         self.unorderedSets = sets
+        self.seperateLimbs = seperateLimbs
     }
     
     private(set) var name: String
     private(set) var order: Int
     private(set) var supersetGroup: Int?
     @Relationship(deleteRule: .cascade) private var unorderedSets: [ExerciseSet]
+    private(set) var seperateLimbs: Bool = false
     
     var sets: [ExerciseSet] {
         get {
@@ -126,10 +128,15 @@ final class Exercise {
         sets.allSatisfy { $0.repsCompleted != nil }
     }
     
-    func createWatchData() -> [WatchSetData] {
+    func createWatchData() -> [[WatchSetData]] {
         let setCount = sets.count
         return sets.map { set in
-            WatchSetData(name: set.longName, setNumber: "\(set.order + 1)/\(setCount)", repRange: set.repRange, exerciseName: name, setIndex: set.order, unit: set.unit, completedReps: set.repsCompleted)
+            if seperateLimbs {
+                [WatchSetData(name: set.longName + " (L)", setNumber: "\(set.order + 1)/\(setCount)", repRange: set.repRange, exerciseName: name, setIndex: set.order, unit: set.unit, completedReps: set.repsCompleted),
+                WatchSetData(name: set.longName + " (R)", setNumber: "\(set.order + 1)/\(setCount)", repRange: set.repRange, exerciseName: name, setIndex: set.order, unit: set.unit, completedReps: set.repsCompleted)]
+            } else {
+                [WatchSetData(name: set.longName, setNumber: "\(set.order + 1)/\(setCount)", repRange: set.repRange, exerciseName: name, setIndex: set.order, unit: set.unit, completedReps: set.repsCompleted)]
+            }
         }
     }
 }
@@ -226,31 +233,34 @@ final class WorkoutTemplate: Codable {
     static var defaults: [WorkoutTemplate] {        
         let workouts = [
             WorkoutTemplate(name: "Legs Day 1", exercises: [
-                ExerciseTemplate(name: "Step ups", order: 0, setCount: 3, unit: .bodyweight, repRange: 8...15, supersetGroup: 0),
-                ExerciseTemplate(name: "Deadlift", order: 1, setCount: 2, unit: .pounds(60), repRange: 10...10, supersetGroup: 0),
-                ExerciseTemplate(name: "Squats Heel Raised", order: 2, setCount: 3, unit: .bodyweight, repRange: 10...10, supersetGroup: 1),
-                ExerciseTemplate(name: "Hamstring Curl", order: 3, setCount: 3, unit: .pounds(20), repRange: 12...12, supersetGroup: 1),
-                ExerciseTemplate(name: "Bench Bridge", order: 4, setCount: 3, unit: .bodyweight, repRange: 8...8, supersetGroup: 2),
-                ExerciseTemplate(name: "Plank", order: 5, setCount: 3, unit: .bodyweight, repRange: 12...15, supersetGroup: 2),
-                ExerciseTemplate(name: "Hopping", order: 6, setCount: 3, unit: .seconds, repRange: 15...15, supersetGroup: nil),
+                ExerciseTemplate(name: "Step ups", order: 0, setCount: 3, unit: .bodyweight, repRange: 8...15, supersetGroup: 0, seperateLimbs: true),
+                ExerciseTemplate(name: "Deadlift", order: 1, setCount: 2, unit: .pounds(90), repRange: 10...10, supersetGroup: 0, seperateLimbs: false),
+                ExerciseTemplate(name: "Squats", order: 2, setCount: 3, unit: .pounds(20), repRange: 8...8, supersetGroup: 1, seperateLimbs: false),
+                ExerciseTemplate(name: "Hamstring Curl", order: 3, setCount: 3, unit: .pounds(35), repRange: 12...12, supersetGroup: 1, seperateLimbs: true),
+                ExerciseTemplate(name: "Bench Bridge", order: 4, setCount: 3, unit: .pounds(10), repRange: 8...8, supersetGroup: 2, seperateLimbs: true),
+                ExerciseTemplate(name: "Plank", order: 5, setCount: 3, unit: .seconds, repRange: 12...15, supersetGroup: 2, seperateLimbs: false),
+                ExerciseTemplate(name: "Double Leg Hopping", order: 6, setCount: 2, unit: .seconds, repRange: 15...15, supersetGroup: 3, seperateLimbs: false),
+                ExerciseTemplate(name: "Single Leg Hopping", order: 7, setCount: 1, unit: .seconds, repRange: 15...15, supersetGroup: 3, seperateLimbs: true),
             ]),
             WorkoutTemplate(name: "Legs Day 2", exercises: [
-                ExerciseTemplate(name: "Leg Lifts", order: 0, setCount: 3, unit: .bodyweight, repRange: 10...10, supersetGroup: nil),
-                ExerciseTemplate(name: "Split Squats", order: 1, setCount: 3, unit: .bodyweight, repRange: 6...10, supersetGroup: 0),
-                ExerciseTemplate(name: "Split Deadlift", order: 2, setCount: 2, unit: .pounds(20), repRange: 10...10, supersetGroup: 0),
-                ExerciseTemplate(name: "Knee Extension", order: 3, setCount: 3, unit: .pounds(15), repRange: 12...12, supersetGroup: 1),
-                ExerciseTemplate(name: "Elevated Bridge", order: 4, setCount: 2, unit: .bodyweight, repRange: 8...8, supersetGroup: 1),
-                ExerciseTemplate(name: "Plank", order: 5, setCount: 3, unit: .bodyweight, repRange: 12...15, supersetGroup: nil),
-                ExerciseTemplate(name: "Calf Raises", order: 5, setCount: 3, unit: .bodyweight, repRange: 10...12, supersetGroup: nil),
+                ExerciseTemplate(name: "Leg Lifts", order: 0, setCount: 3, unit: .bodyweight, repRange: 10...10, supersetGroup: nil, seperateLimbs: true),
+                ExerciseTemplate(name: "Evelated Split Squats", order: 1, setCount: 3, unit: .bodyweight, repRange: 6...8, supersetGroup: 0, seperateLimbs: true),
+                ExerciseTemplate(name: "Split Deadlift", order: 2, setCount: 2, unit: .pounds(35), repRange: 10...10, supersetGroup: 0, seperateLimbs: true),
+                ExerciseTemplate(name: "Knee Extension", order: 3, setCount: 3, unit: .pounds(15), repRange: 12...12, supersetGroup: nil, seperateLimbs: true),
+                ExerciseTemplate(name: "Plank", order: 4, setCount: 3, unit: .seconds, repRange: 12...15, supersetGroup: 1, seperateLimbs: false),
+                ExerciseTemplate(name: "Elevated Bridge", order: 5, setCount: 2, unit: .bodyweight, repRange: 8...8, supersetGroup: 1, seperateLimbs: false),
+                ExerciseTemplate(name: "Calf Raises", order: 6, setCount: 3, unit: .bodyweight, repRange: 10...12, supersetGroup: 2, seperateLimbs: false),
+                ExerciseTemplate(name: "Single Leg Squats", order: 7, setCount: 3, unit: .bodyweight, repRange: 3...6, supersetGroup: 2, seperateLimbs: true),
             ]),
             WorkoutTemplate(name: "Arms", exercises: [
-                ExerciseTemplate(name: "Shoulder Press", order: 0, setCount: 3, unit: .pounds(15), repRange: 8...10, supersetGroup: 0),
-                ExerciseTemplate(name: "Concentration Curl", order: 1, setCount: 3, unit: .pounds(15), repRange: 8...10, supersetGroup: 0),
-                ExerciseTemplate(name: "Tricep Extension", order: 2, setCount: 3, unit: .pounds(30), repRange: 8...10, supersetGroup: 1),
-                ExerciseTemplate(name: "Lateral Raise", order: 3, setCount: 3, unit: .pounds(8), repRange: 8...10, supersetGroup: 1),
-                ExerciseTemplate(name: "Tricep Pushdown", order: 4, setCount: 3, unit: .pounds(50), repRange: 8...10, supersetGroup: 2),
-                ExerciseTemplate(name: "Hammer Curl", order: 5, setCount: 3, unit: .pounds(10), repRange: 8...10, supersetGroup: 2),
-                ExerciseTemplate(name: "Side Plank", order: 6, setCount: 3, unit: .bodyweight, repRange: 12...15, supersetGroup: nil),
+                ExerciseTemplate(name: "Shoulder Press", order: 0, setCount: 3, unit: .pounds(25), repRange: 8...10, supersetGroup: 0, seperateLimbs: false),
+                ExerciseTemplate(name: "Hammer Curl", order: 1, setCount: 3, unit: .pounds(15), repRange: 8...10, supersetGroup: 0, seperateLimbs: false),
+                ExerciseTemplate(name: "Tricep Extension", order: 2, setCount: 3, unit: .pounds(35), repRange: 8...10, supersetGroup: 1, seperateLimbs: false),
+                ExerciseTemplate(name: "Lateral Raise", order: 3, setCount: 3, unit: .pounds(8), repRange: 8...10, supersetGroup: 1, seperateLimbs: false),
+                ExerciseTemplate(name: "Tricep Pushdown", order: 4, setCount: 3, unit: .pounds(60), repRange: 8...10, supersetGroup: 2, seperateLimbs: false),
+                ExerciseTemplate(name: "Lat Pulldown", order: 5, setCount: 3, unit: .pounds(70), repRange: 8...10, supersetGroup: 2, seperateLimbs: false),
+                ExerciseTemplate(name: "Side Plank", order: 6, setCount: 3, unit: .seconds, repRange: 12...15, supersetGroup: 3, seperateLimbs: true),
+                ExerciseTemplate(name: "Child's Pose", order: 7, setCount: 2, unit: .bodyweight, repRange: 5...5, supersetGroup: 3, seperateLimbs: false),
             ])
         ]
         
@@ -262,10 +272,10 @@ final class WorkoutTemplate: Codable {
         let container = ModelContainer.preview
         
         let workout = WorkoutTemplate(name: "Test Workout", exercises: [
-            ExerciseTemplate(name: "Squat", order: 0, setCount: 3, unit: .bodyweight, repRange: 12...15, supersetGroup: 0),
-            ExerciseTemplate(name: "Deadlift", order: 1, setCount: 3, unit: .pounds(30), repRange: 8...12, supersetGroup: 0),
-            ExerciseTemplate(name: "Wallsit", order: 2, setCount: 2, unit: .seconds, repRange: 30...30, supersetGroup: nil),
-            ExerciseTemplate(name: "Bike", order: 3, setCount: 1, unit: .minutes, repRange: 10...15, supersetGroup: nil),
+            ExerciseTemplate(name: "Squat", order: 0, setCount: 3, unit: .bodyweight, repRange: 12...15, supersetGroup: 0, seperateLimbs: false),
+            ExerciseTemplate(name: "Deadlift", order: 1, setCount: 3, unit: .pounds(30), repRange: 8...12, supersetGroup: 0, seperateLimbs: true),
+            ExerciseTemplate(name: "Wallsit", order: 2, setCount: 2, unit: .seconds, repRange: 30...30, supersetGroup: nil, seperateLimbs: false),
+            ExerciseTemplate(name: "Bike", order: 3, setCount: 1, unit: .minutes, repRange: 10...15, supersetGroup: nil, seperateLimbs: false),
         ])
         
         container.mainContext.insert(workout)
@@ -278,7 +288,7 @@ final class WorkoutTemplate: Codable {
 @Model
 final class ExerciseTemplate: Codable {
     enum CodingKeys: String, CodingKey {
-        case name, order, setCount, unit, repRange, supersetGroup
+        case name, order, setCount, unit, repRange, supersetGroup, seperateLimbs
     }
     
     init(from decoder: any Decoder) throws {
@@ -290,6 +300,7 @@ final class ExerciseTemplate: Codable {
         unit = try container.decode(Unit.self, forKey: .unit)
         repRange = try container.decode(ClosedRange<Int>.self, forKey: .repRange)
         supersetGroup = try container.decode(Int?.self, forKey: .supersetGroup)
+        seperateLimbs = try container.decode(Bool.self, forKey: .seperateLimbs)
     }
     
     func encode(to encoder: any Encoder) throws {
@@ -301,15 +312,17 @@ final class ExerciseTemplate: Codable {
         try container.encode(unit, forKey: .unit)
         try container.encode(repRange, forKey: .repRange)
         try container.encode(supersetGroup, forKey: .supersetGroup)
+        try container.encode(seperateLimbs, forKey: .seperateLimbs)
     }
     
-    internal init(name: String, order: Int, setCount: Int, unit: Unit, repRange: ClosedRange<Int>, supersetGroup: Int?) {
+    internal init(name: String, order: Int, setCount: Int, unit: Unit, repRange: ClosedRange<Int>, supersetGroup: Int?, seperateLimbs: Bool) {
         self.name = name
         self.order = order
         self.setCount = setCount
         self.unit = unit
         self.repRange = repRange
         self.supersetGroup = supersetGroup
+        self.seperateLimbs = seperateLimbs
     }
     
     private(set) var name: String
@@ -318,13 +331,14 @@ final class ExerciseTemplate: Codable {
     private(set) var unit: Unit
     private(set) var repRange: ClosedRange<Int>
     private(set) var supersetGroup: Int?
+    private(set) var seperateLimbs: Bool = false
     
     func newExercise() -> Exercise {
-        Exercise(name: name, order: order, unit: unit, repRange: repRange, setCount: setCount, supersetGroup: supersetGroup)
+        Exercise(name: name, order: order, unit: unit, repRange: repRange, setCount: setCount, supersetGroup: supersetGroup, seperateLimbs: seperateLimbs)
     }
     
     func prototype() -> WorkoutTemplatePrototype.Exercise {
-        WorkoutTemplatePrototype.Exercise(name: name, setCount: setCount, unitValue: unit.value, unit: unit, repRangeLower: repRange.lowerBound, repRangeUpper: repRange.upperBound, supersetGroup: supersetGroup)
+        WorkoutTemplatePrototype.Exercise(name: name, setCount: setCount, unitValue: unit.value, unit: unit, repRangeLower: repRange.lowerBound, repRangeUpper: repRange.upperBound, supersetGroup: supersetGroup, seperateLimbs: seperateLimbs)
     }
 }
 
@@ -392,10 +406,11 @@ final class ExerciseTemplate: Codable {
             lhs.unit == rhs.unit &&
             lhs.repRangeLower == rhs.repRangeLower &&
             lhs.repRangeUpper == rhs.repRangeUpper &&
-            lhs.supersetGroup == rhs.supersetGroup
+            lhs.supersetGroup == rhs.supersetGroup &&
+            lhs.seperateLimbs == rhs.seperateLimbs
         }
         
-        internal init(name: String = "", setCount: Int? = nil, unitValue: Int? = nil, unit: Unit? = nil, repRangeLower: Int? = nil, repRangeUpper: Int? = nil, supersetGroup: Int?) {
+        internal init(name: String = "", setCount: Int? = nil, unitValue: Int? = nil, unit: Unit? = nil, repRangeLower: Int? = nil, repRangeUpper: Int? = nil, supersetGroup: Int?, seperateLimbs: Bool?) {
             self.name = name
             self.setCount = setCount
             self.unitValue = unitValue
@@ -403,6 +418,7 @@ final class ExerciseTemplate: Codable {
             self.repRangeLower = repRangeLower
             self.repRangeUpper = repRangeUpper
             self.supersetGroup = supersetGroup
+            self.seperateLimbs = seperateLimbs ?? false
         }
         
         let id = UUID()
@@ -413,6 +429,7 @@ final class ExerciseTemplate: Codable {
         var repRangeLower: Int? = nil
         var repRangeUpper: Int? = nil
         var supersetGroup: Int? = nil
+        var seperateLimbs: Bool = false
         
         func createTemplate(row: Int) throws -> ExerciseTemplate {
             guard !name.isEmpty else {
@@ -439,7 +456,7 @@ final class ExerciseTemplate: Codable {
                 throw CreateError.repRange(row: row)
             }
             
-            return .init(name: name, order: row, setCount: setCount, unit: unit, repRange: repRangeLower...repRangeUpper, supersetGroup: supersetGroup)
+            return .init(name: name, order: row, setCount: setCount, unit: unit, repRange: repRangeLower...repRangeUpper, supersetGroup: supersetGroup, seperateLimbs: seperateLimbs)
         }
     }
     
