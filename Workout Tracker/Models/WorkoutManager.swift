@@ -13,7 +13,7 @@ import WatchKit
 class WorkoutManager: NSObject {
     let healthStore = HKHealthStore()
     var builder: HKLiveWorkoutBuilder?
-    var session: WKExtendedRuntimeSession?
+    var session: HKWorkoutSession?
     
     var heartRate: Double = 0
     
@@ -24,17 +24,14 @@ class WorkoutManager: NSObject {
         configuration.activityType = .traditionalStrengthTraining
         configuration.locationType = .indoor
         
-        let workoutSession = try? HKWorkoutSession(healthStore: healthStore, configuration: configuration)
+        session = try? HKWorkoutSession(healthStore: healthStore, configuration: configuration)
         
-        builder = workoutSession?.associatedWorkoutBuilder()
+        builder = session?.associatedWorkoutBuilder()
         builder?.dataSource = HKLiveWorkoutDataSource(healthStore: healthStore, workoutConfiguration: configuration)
         builder?.delegate = self
         
-        workoutSession?.startActivity(with: Date())
+        session?.startActivity(with: Date())
         builder?.beginCollection(withStart: Date()) { _, _ in }
-        
-        session = WKExtendedRuntimeSession()
-        session?.start()
     }
     
     func completeWorkout() {
@@ -44,7 +41,7 @@ class WorkoutManager: NSObject {
         builder.endCollection(withEnd: Date()) { _, _ in
             builder.finishWorkout() { _, _ in }
         }
-        session?.invalidate()
+        session?.stopActivity(with: Date())
         session = nil
         self.builder = nil
     }
