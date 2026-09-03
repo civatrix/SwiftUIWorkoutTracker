@@ -26,7 +26,7 @@ struct WorkoutView: View {
     @State private var hasAppeared = false
     
     @State private var activeExercise: Exercise?
-    @State private var activeSet: Int?
+    @State private var activeSet: ExerciseSet?
     
     let template: WorkoutTemplate?
     
@@ -52,24 +52,23 @@ struct WorkoutView: View {
                     withAnimation {
                         value.scrollTo(activeExercise)
                     }
-                    guard let activeExercise, let activeSet else {
-                        return
-                    }
-                    PhoneConnectivityManager.shared.sendActiveSet(activeExercise, activeSet)
+//                    guard let activeExercise, let activeSet else {
+//                        return
+//                    }
+//                    PhoneConnectivityManager.shared.sendActiveSet(activeExercise, activeSet)
                 }
-                .onChange(of: activeSet) {
-                    guard let activeExercise, let activeSet else {
-                        return
-                    }
-                    PhoneConnectivityManager.shared.sendActiveSet(activeExercise, activeSet)
-                }
+//                .onChange(of: activeSet) {
+//                    guard let activeExercise, let activeSet else {
+//                        return
+//                    }
+//                    PhoneConnectivityManager.shared.sendActiveSet(activeExercise, activeSet)
+//                }
             }
             
-            if let activeExercise, let activeSet {
-                let title = "\(activeExercise.longName) - Set \(activeSet + 1)"
-                RepButtons(title: title, repRange: activeExercise.repRange) {
-                    self.activeExercise?.repsCompleted[activeSet] = $0
-                    self.activeSet = activeSet + 1
+            if let activeSet {
+                let title = "\(activeSet.longName) - Set \(activeSet.order + 1)"
+                RepButtons(title: title, repRange: activeSet.repRange) {
+                    self.activeSet?.repsCompleted = $0
                     self.updateActives()
                 }
                 .padding([.leading, .trailing])
@@ -86,7 +85,7 @@ struct WorkoutView: View {
                     modelContext.insert(workout)
                     try! modelContext.save()
                     activeExercise = workout.exercises.first { !$0.allComplete }
-                    activeSet = activeExercise?.repsCompleted.firstIndex(of: nil)
+                    activeSet = activeExercise?.sets.first { $0.repsCompleted == nil}
                     
                     PhoneConnectivityManager.shared.sendWorkout(workout)
                 }
@@ -97,11 +96,11 @@ struct WorkoutView: View {
         guard let activeExercise, let activeSet else {
             return
         }
-        guard activeSet == activeExercise.repsCompleted.count else {
+        if activeSet.order + 1 < activeExercise.sets.count {
+            self.activeSet = activeExercise.sets[activeSet.order + 1]
             return
         }
         
-        self.activeSet = 0
         guard let currentIndex = workout.exercises.firstIndex(of: activeExercise),
               currentIndex + 1 < workout.exercises.count else {
             self.activeSet = nil
@@ -110,6 +109,7 @@ struct WorkoutView: View {
         }
         
         self.activeExercise = workout.exercises[currentIndex + 1]
+        self.activeSet = self.activeExercise?.sets.first
     }
     
     private func completeWorkout() {

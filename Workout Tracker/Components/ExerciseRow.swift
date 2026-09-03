@@ -10,8 +10,8 @@ import SwiftUI
 struct ExerciseRow: View {
     @Environment(\.colorScheme) var colorScheme
     @Binding var exercise: Exercise
-    let activeSet: Int?
-    let onTapRow: (Int) -> ()
+    let activeSet: ExerciseSet?
+    let onTapRow: (ExerciseSet) -> ()
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -21,33 +21,33 @@ struct ExerciseRow: View {
                 Grid {
                     GridRow {
                         Text("Set")
-                        if exercise.unit.hasReps {
-                            Text(exercise.unit.title)
+                        if exercise.sets[0].unit.hasReps {
+                            Text(exercise.sets[0].unit.title)
                         }
                         Text("Target")
                         Text("Reps")
                     }
-                    ForEach(exercise.repsCompleted.indices, id: \.self) { index in
+                    ForEach(exercise.sets, id: \.self) { set in
                         HStack {
                             GridRow {
-                                Text("\(index + 1)")
-                                Text("\(exercise.weightDescription)")
-                                if exercise.unit.hasReps {
-                                    Text("\(exercise.repRange.lowerBound) - \(exercise.repRange.upperBound)")
+                                Text("\(set.order)")
+                                Text("\(set.weightDescription)")
+                                if set.unit.hasReps {
+                                    Text("\(set.repRange.lowerBound) - \(set.repRange.upperBound)")
                                 }
-                                if let reps = exercise.repsCompleted[index] {
+                                if let reps = set.repsCompleted {
                                     Text("\(reps)")
                                 } else {
                                     Text("-")
                                 }
                             }
                             .padding([.leading, .trailing])
-                            .foregroundStyle(index == activeSet ? activeTextColor : inactiveTextColor)
+                            .foregroundStyle(set == activeSet ? activeTextColor : inactiveTextColor)
                         }
-                        .background(index == activeSet ? .purple : .clear)
+                        .background(set == activeSet ? .purple : .clear)
                         .clipShape(Capsule())
                         .onTapGesture {
-                            onTapRow(index)
+                            onTapRow(set)
                         }
                     }
                 }

@@ -108,19 +108,19 @@ class PhoneConnectivityManager: NSObject, WCSessionDelegate {
         }
     }
     
-    func sendActiveSet(_ exercise: Exercise, _ set: Int) {
-        guard WCSession.default.activationState == .activated else { return }
-        let modelContext = ModelContext(modelContainer)
-        guard let activeWorkoutIdentifier, let activeWorkout = modelContext.model(for: activeWorkoutIdentifier) as? Workout else { return }
-        let watchData = activeWorkout.createWatchData()
-        let activeSet = (watchData.firstIndex(where: { $0.name == exercise.longName }) ?? 0) + set
-        
-        do {
-            try WCSession.default.updateApplicationContext(["activeSet": activeSet])
-        } catch {
-            Logger.shared.log("Error sending workout: \(error)")
-        }
-    }
+//    func sendActiveSet(_ exercise: Exercise, _ set: Int) {
+//        guard WCSession.default.activationState == .activated else { return }
+//        let modelContext = ModelContext(modelContainer)
+//        guard let activeWorkoutIdentifier, let activeWorkout = modelContext.model(for: activeWorkoutIdentifier) as? Workout else { return }
+//        let watchData = activeWorkout.createWatchData()
+//        let activeSet = (watchData.firstIndex(where: { $0.name == exercise.longName }) ?? 0) + set
+//        
+//        do {
+//            try WCSession.default.updateApplicationContext(["activeSet": activeSet])
+//        } catch {
+//            Logger.shared.log("Error sending workout: \(error)")
+//        }
+//    }
     
     func sendCompletion() {
         guard WCSession.default.activationState == .activated else { return }

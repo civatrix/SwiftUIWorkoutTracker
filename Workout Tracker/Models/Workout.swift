@@ -35,7 +35,7 @@ final class Workout {
     }
     
     var allComplete: Bool {
-        unorderedExercises.allSatisfy { !$0.repsCompleted.contains(nil) }
+        unorderedExercises.allSatisfy { $0.allComplete }
     }
     
     func createWatchData() -> [WatchSetData] {
@@ -46,20 +46,11 @@ final class Workout {
                 guard !seenGroups.contains(group) else { continue }
                 let data = exercises
                     .filter { $0.supersetGroup == group }
-                    .map { exercise in
-                        let repCount = exercise.repsCompleted.count
-                        return exercise.repsCompleted.enumerated().map { (setIndex, reps) in
-                            WatchSetData(name: exercise.longName, setNumber: "\(setIndex + 1)/\(repCount)", repRange: exercise.repRange, exerciseName: exercise.name, setIndex: setIndex, unit: exercise.unit, completedReps: reps)
-                        }
-                    }
+                    .map { $0.createWatchData() }
                 watchData.append(contentsOf: data.interleaved())
                 seenGroups.insert(group)
             } else {
-                let repCount = exercise.repsCompleted.count
-                let data = exercise.repsCompleted.enumerated().map { (setIndex, reps) in
-                    WatchSetData(name: exercise.longName, setNumber: "\(setIndex + 1)/\(repCount)", repRange: exercise.repRange, exerciseName: exercise.name, setIndex: setIndex, unit: exercise.unit, completedReps: reps)
-                }
-                watchData.append(contentsOf: data)
+                watchData.append(contentsOf: exercise.createWatchData())
             }
         }
         
@@ -67,7 +58,7 @@ final class Workout {
     }
     
     func ingestWatchData(exerciseName: String, setIndex: Int, completedReps: Int) {
-        exercises.first { $0.name == exerciseName }?.repsCompleted[setIndex] = completedReps
+        exercises.first { $0.name == exerciseName }?.sets[setIndex].repsCompleted = completedReps
     }
     
     @MainActor
@@ -103,21 +94,61 @@ struct WatchSetData: Codable, Equatable, Identifiable {
 
 @Model
 final class Exercise {
-    internal init(name: String, order: Int, unit: Unit, repRange: ClosedRange<Int>, setCount: Int, supersetGroup: Int?) {
+    internal convenience init(name: String, order: Int, unit: Unit, repRange: ClosedRange<Int>, setCount: Int, supersetGroup: Int?) {
+        let sets: [ExerciseSet] = (0..<setCount).map {
+            .init(name: name, order: $0, repRange: repRange, unit: unit)
+        }
+        self.init(name: name, order: order, supersetGroup: supersetGroup, sets: sets)
+    }
+    
+    internal init(name: String, order: Int, supersetGroup: Int?, sets: [ExerciseSet]) {
         self.name = name
         self.order = order
-        self.unit = unit
-        self.repRange = repRange
-        self.repsCompleted = [Int?](repeating: nil, count: setCount)
         self.supersetGroup = supersetGroup
+        self.unorderedSets = sets
     }
     
     private(set) var name: String
     private(set) var order: Int
-    private(set) var unit: Unit
-    private(set) var repRange: ClosedRange<Int>
-    var repsCompleted: [Int?]
     private(set) var supersetGroup: Int?
+    @Relationship(deleteRule: .cascade) private var unorderedSets: [ExerciseSet]
+    
+    var sets: [ExerciseSet] {
+        get {
+            unorderedSets.sorted { $0.order < $1.order }
+        }
+        set {
+            unorderedSets = newValue
+        }
+    }
+    
+    var allComplete: Bool {
+        sets.allSatisfy { $0.repsCompleted != nil }
+    }
+    
+    func createWatchData() -> [WatchSetData] {
+        let setCount = sets.count
+        return sets.map { set in
+            WatchSetData(name: set.longName, setNumber: "\(set.order + 1)/\(setCount)", repRange: set.repRange, exerciseName: name, setIndex: set.order, unit: set.unit, completedReps: set.repsCompleted)
+        }
+    }
+}
+
+@Model
+final class ExerciseSet {
+    internal init(name: String, order: Int, repRange: ClosedRange<Int>, unit: Unit, repsCompleted: Int? = nil) {
+        self.name = name
+        self.order = order
+        self.repRange = repRange
+        self.unit = unit
+        self.repsCompleted = repsCompleted
+    }
+    
+    private(set) var name: String
+    private(set) var order: Int
+    private(set) var repRange: ClosedRange<Int>
+    private(set) var unit: Unit
+    var repsCompleted: Int?
     
     var longName: String {
         return switch unit {
@@ -147,10 +178,6 @@ final class Exercise {
                 "\(repRange.lowerBound)-\(repRange.upperBound) min"
             }
         }
-    }
-    
-    var allComplete: Bool {
-        repsCompleted.allSatisfy { $0 != nil }
     }
 }
 
